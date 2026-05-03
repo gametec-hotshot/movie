@@ -14,6 +14,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" href="logo.png">
+  <meta name="version" content="1.1">
   <script>window.isAdBlockScriptLoaded = false;</script>
   <script src="advertisement.js" onerror="window.isAdBlockScriptLoaded = false;"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -3726,7 +3727,22 @@
     // ── Service Worker ─────────────────────────────────────────────────────
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
+        // Appending version query string to sw.js to bypass browser cache
+        const swUrl = './sw.js?v=1.1';
+        
+        navigator.serviceWorker.register(swUrl).then(registration => {
+          // Check for updates manually on load
+          registration.update();
+        }).catch(() => {});
+      });
+
+      // Reload the page when a new service worker takes over (update found & activated)
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
       });
     }
 

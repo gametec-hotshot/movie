@@ -5,7 +5,7 @@
  * - NEVER caches API calls (TMDb, streaming servers) — those must always be fresh.
  */
 
-const CACHE_NAME = 'prisma-shell-v1';
+const CACHE_NAME = 'prisma-shell-v1.1';
 
 const APP_SHELL = [
   './',
@@ -23,7 +23,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// On activate: delete old caches
+// On activate: delete old caches and take control immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -36,7 +36,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// On fetch: Network-first for API calls, Cache-first for shell
+// On fetch: Network-first for everything except external resources
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
@@ -51,18 +51,14 @@ self.addEventListener('fetch', (event) => {
     !url.hostname.includes(self.location.hostname)
   );
 
-  if (isExternal) {
-    // Let the browser handle it normally
-    return;
-  }
+  if (isExternal) return;
 
-  // For local app shell files: Cache-first, fall back to network
+  // Network-First Strategy for App Shell
+  // Ensures user gets the latest version if online, fallback to cache if offline.
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-
-      return fetch(event.request).then((response) => {
-        // Cache valid responses for shell assets
+    fetch(event.request)
+      .then((response) => {
+        // If valid response, clone and update cache
         if (response && response.status === 200 && response.type === 'basic') {
           const responseToCache = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -70,12 +66,17 @@ self.addEventListener('fetch', (event) => {
           });
         }
         return response;
-      }).catch(() => {
-        // Offline fallback: serve index.html for navigation requests
-        if (event.request.mode === 'navigate') {
-          return caches.match('./index.html');
-        }
-      });
-    })
+      })
+      .catch(() => {
+        // If network fails, try serving from cache
+        return caches.match(event.request).then((cached) => {
+          if (cached) return cached;
+          
+          // Offline fallback: serve index.html for navigation requests
+          if (event.request.mode === 'navigate') {
+            return caches.match('./index.html');
+          }
+        });
+      })
   );
 });
