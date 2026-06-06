@@ -14,7 +14,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" href="logo.png">
-  <meta name="version" content="1.2">
+  <meta name="version" content="1.3">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -2827,9 +2827,9 @@
 
     window.addEventListener('popstate', (e) => {
       if (playerModal.classList.contains('active')) {
-        if (!e.state || !e.state.playerOpen) {
-          closePlayerModal();
-        }
+        // Android back button while player is open: just close the player, don't navigate
+        closePlayerModal();
+        return;
       }
 
       if (e.state) renderState(e.state);
@@ -3512,7 +3512,7 @@
       const currentState = history.state || { view: 'home' };
       const currentHash = window.location.hash || '#home';
       const playerHash = currentHash.includes('-player') ? currentHash : currentHash + '-player';
-      history.pushState({ ...currentState, playerOpen: true }, '', playerHash);
+      history.replaceState({ ...currentState, playerOpen: true }, '', playerHash);
 
       playerModal.classList.add('active');
       document.body.style.overflow = 'hidden';
@@ -3651,11 +3651,12 @@
     }
 
     closeModal.addEventListener('click', () => {
-      if (history.state && history.state.playerOpen) {
-        history.back();
-      } else {
-        closePlayerModal();
-      }
+      // Remove the playerOpen flag from state in-place (no history.back() needed)
+      const currentState = history.state || {};
+      const { playerOpen, ...stateWithoutPlayer } = currentState;
+      const cleanHash = (window.location.hash || '').replace('-player', '') || '#home';
+      history.replaceState(stateWithoutPlayer, '', cleanHash);
+      closePlayerModal();
     });
 
     function updateContinueWatchingUI() {
@@ -3731,7 +3732,7 @@
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         // Appending static version string to sw.js to bypass browser cache
-        const swUrl = `./sw.js?v=1.2`;
+        const swUrl = `./sw.js?v=1.3`;
         
         navigator.serviceWorker.register(swUrl).then(registration => {
           // Check for updates manually on load
