@@ -3730,8 +3730,8 @@
     // ── Service Worker ─────────────────────────────────────────────────────
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        // Appending dynamic timestamp to sw.js to ALWAYS bypass browser cache
-        const swUrl = `./sw.js?v=${new Date().getTime()}`;
+        // Appending static version string to sw.js to bypass browser cache
+        const swUrl = `./sw.js?v=1.2`;
         
         navigator.serviceWorker.register(swUrl).then(registration => {
           // Check for updates manually on load
