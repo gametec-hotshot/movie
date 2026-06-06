@@ -14,7 +14,10 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" href="logo.png">
-  <meta name="version" content="1.1">
+  <meta name="version" content="1.2">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <script>window.isAdBlockScriptLoaded = false;</script>
   <script src="advertisement.js" onerror="window.isAdBlockScriptLoaded = false;"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -3727,8 +3730,8 @@
     // ── Service Worker ─────────────────────────────────────────────────────
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        // Appending version query string to sw.js to bypass browser cache
-        const swUrl = './sw.js?v=1.1';
+        // Appending dynamic timestamp to sw.js to ALWAYS bypass browser cache
+        const swUrl = `./sw.js?v=${new Date().getTime()}`;
         
         navigator.serviceWorker.register(swUrl).then(registration => {
           // Check for updates manually on load
