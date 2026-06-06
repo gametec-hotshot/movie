@@ -2080,11 +2080,16 @@
         serversToRender.forEach(async (srv) => {
           const result = await pingServer(srv.url);
           const statusEl = document.getElementById(`popup-ping-status-${srv.id}`);
+          const btnEl = document.getElementById(`server-btn-${srv.id}`);
           if (!statusEl) return;
           if (result.status === 'online') {
             statusEl.innerHTML = `<span class="ping-light ping-green"></span> ${result.ping}ms`;
           } else {
             statusEl.innerHTML = `<span class="ping-light ping-red"></span> Offline`;
+            if (btnEl && serverSelectionBody) {
+              // Push the offline server's button to the very end of the list
+              serverSelectionBody.appendChild(btnEl);
+            }
           }
         });
       };
