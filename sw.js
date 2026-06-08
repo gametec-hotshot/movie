@@ -5,7 +5,7 @@
  * - NEVER caches API calls (TMDb, streaming servers) — those must always be fresh.
  */
 
-const CACHE_NAME = 'prisma-shell-v1.3';
+const CACHE_NAME = 'prisma-shell-v1.4';
 
 const APP_SHELL = [
   './',
