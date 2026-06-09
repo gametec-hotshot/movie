@@ -14,12 +14,12 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" href="logo.png">
-  <meta name="version" content="1.4">
+  <meta name="version" content="1.4.1">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <script>window.isAdBlockScriptLoaded = false;</script>
-  <script src="advertisement.js?v=1.4" onerror="window.isAdBlockScriptLoaded = false;"></script>
+  <script src="advertisement.js?v=1.4.1" onerror="window.isAdBlockScriptLoaded = false;"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" as="style"
@@ -1908,6 +1908,19 @@
     </div>
   </div>
 
+  <div class="modal" id="download-selection-modal">
+    <div class="modal-content-wrapper"
+      style="max-width: 450px; height: auto; padding: 30px; background: #1a1a1a; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;">
+      <button class="close-btn" id="close-download-modal"
+        style="top: 15px; right: 15px; width: 30px; height: 30px; font-size: 20px;">&times;</button>
+      <h2 style="margin-bottom: 5px; color: #fff; font-size: 1.4rem;">Download Media</h2>
+      <p style="margin-bottom: 25px; font-size: 0.85rem; color: #aaa;">Select a provider to download this video.</p>
+      <div id="download-selection-body" style="max-height: 50vh; overflow-y: auto; padding-right: 5px; display: flex; flex-direction: column; gap: 10px;">
+        <!-- Download Servers go here -->
+      </div>
+    </div>
+  </div>
+
   <div class="modal" id="sub-dub-modal">
     <div class="modal-content-wrapper"
       style="max-width: 350px; height: auto; padding: 30px; background: #1a1a1a; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; text-align: center;">
@@ -2081,14 +2094,14 @@
       { id: 'vidnest', name: 'Vidnest', url: 'https://vidnest.fun', adFree: true, sandbox: false, label: 'Server 2' },
       { id: 'vidsync', name: 'VidSync', url: 'https://vidsync.xyz', adFree: true, sandbox: false, label: 'Server 3' },
       { id: 'zxcstream', name: 'Zxcstream', url: 'https://www.zxcstream.xyz', adFree: true, sandbox: true, label: 'Server 4' },
-      { id: 'rivestream', name: 'RiveStream', url: 'https://www.rivestream.app', adFree: true, sandbox: false, label: 'Server 5' },
+      { id: 'rivestream', name: 'RiveStream', url: 'https://www.rivestream.app', adFree: true, sandbox: false, label: 'Server 5', hasDownload: true },
 
       // Tier 2: Additional Ad-Free (In Modal)
       { id: 'amri', name: 'Amri', url: 'https://amri.gg', adFree: true, sandbox: false, label: 'Server 6' },
       { id: 'mapple', name: 'Mapple', url: 'https://mapple.uk', adFree: true, sandbox: false, label: 'Server 7' },
       { id: 'vidsrc-cc', name: 'Vidsrc.cc', url: 'https://vidsrc.cc', adFree: true, sandbox: false, label: 'Server 8' },
       { id: 'cinesrc', name: 'Cinesrc', url: 'https://cinesrc.st', adFree: true, sandbox: false, label: 'Server 9' },
-      { id: '1embed', name: '1Embed', url: 'https://1embed.cc', adFree: true, sandbox: false, label: 'Server 10' },
+      { id: '1embed', name: '1Embed', url: 'https://1embed.cc', adFree: true, sandbox: false, label: 'Server 10', hasDownload: true },
 
       // Tier 3: Has Ads (Requires Sandbox Workaround)
       { id: 'vidking', name: 'Vidking', url: 'https://www.vidking.net/embed/movie/550', adFree: false, sandbox: false, label: 'Server 11' },
@@ -2146,6 +2159,51 @@
     closeServerModal.addEventListener('click', () => {
       serverSelectionModal.classList.remove('active');
     });
+
+    const downloadSelectionModal = document.getElementById('download-selection-modal');
+    const closeDownloadModal = document.getElementById('close-download-modal');
+    const downloadSelectionBody = document.getElementById('download-selection-body');
+
+    if (closeDownloadModal) {
+      closeDownloadModal.addEventListener('click', () => {
+        downloadSelectionModal.classList.remove('active');
+      });
+    }
+
+    function openDownloadModal(id, type, season, episode) {
+      const downloadServers = SERVERS.filter(s => s.hasDownload);
+      downloadSelectionBody.innerHTML = '';
+      
+      downloadServers.forEach(srv => {
+        const isRecommended = srv.id === 'rivestream';
+        let downloadUrl = '';
+        if (srv.id === '1embed') {
+          downloadUrl = type === 'movie' ? `https://1embed.cc/download/movie/${id}` : `https://1embed.cc/download/tv/${id}/${season}/${episode}`;
+        } else if (srv.id === 'rivestream') {
+          downloadUrl = type === 'movie' ? `https://www.rivestream.app/download?type=movie&id=${id}` : `https://www.rivestream.app/download?type=tv&id=${id}&season=${season}&episode=${episode}`;
+        }
+        
+        const recBadge = isRecommended ? `<span style="font-size: 0.65rem; font-weight: 800; color: #46d369; padding: 3px 6px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; text-transform: uppercase;">Recommended</span>` : '';
+        const dlIcon = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="margin-right: 5px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`;
+
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-play';
+        btn.style.cssText = 'background: rgba(255, 255, 255, 0.05); color: #fff; border: 1px solid rgba(255, 255, 255, 0.15); flex-direction: row; align-items: center; justify-content: space-between; padding: 14px 20px; border-radius: 12px !important; min-height: 60px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%;';
+        btn.innerHTML = `
+          <div style="display: flex; align-items: center; font-size: 1.1rem; font-weight: bold;">
+            ${dlIcon} ${srv.name}
+          </div>
+          ${recBadge}
+        `;
+        btn.onclick = () => {
+          window.open(downloadUrl, '_blank');
+          downloadSelectionModal.classList.remove('active');
+        };
+        downloadSelectionBody.appendChild(btn);
+      });
+      
+      downloadSelectionModal.classList.add('active');
+    }
 
     async function pingServer(serverUrl) {
       const start = performance.now();
@@ -2379,6 +2437,64 @@
           if (timeRemaining <= threshold && timeRemaining > 0) {
             window.nextPromptShown = true;
             showNextPrompt(meta);
+          }
+        }
+      }
+
+      // Handle progress updates from Vidcore
+      if (event.origin === 'https://vidcore.net' && event.data) {
+        const { type, data } = event.data;
+        const meta = JSON.parse(playerIframe.dataset.meta || '{}');
+        if (!meta.id) return;
+        
+        if (type === 'timeupdate' && data) {
+          const { currentTime, duration, percent } = data;
+          const progressData = {
+            id: meta.id,
+            currentTime: currentTime,
+            duration: duration,
+            progress: percent * 100,
+            updatedAt: Date.now(),
+            mediaType: meta.mediaType,
+            title: meta.title || meta.name,
+            poster: meta.poster_path ? IMG_URL + meta.poster_path : ''
+          };
+
+          localStorage.setItem(`progress_${meta.id}`, JSON.stringify(progressData));
+
+          let cw = JSON.parse(localStorage.getItem('continue_watching') || '[]');
+          cw = cw.filter(x => String(x) !== String(meta.id));
+          cw.unshift(meta.id);
+          localStorage.setItem('continue_watching', JSON.stringify(cw.slice(0, 20)));
+
+          renderContinueWatching();
+
+          if (!window.nextPromptShown && duration > 0) {
+            const timeRemaining = duration - currentTime;
+            let threshold;
+            if (duration <= 1800) threshold = 90;
+            else if (duration <= 3600) threshold = 120;
+            else threshold = 300;
+
+            if (timeRemaining <= threshold && timeRemaining > 0) {
+              window.nextPromptShown = true;
+              showNextPrompt(meta);
+            }
+          }
+        }
+
+        if (type === 'ended') {
+          if (meta.mediaType === 'tv') {
+            const key = `watched_${meta.id}_${meta.currentSeason}_${meta.currentEpisode}`;
+            localStorage.setItem(key, 'true');
+            const icon = document.getElementById(`watch-icon-${meta.id}-${meta.currentSeason}-${meta.currentEpisode}`);
+            if (icon) {
+              icon.style.color = '#46d369';
+              icon.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"></path></svg>`;
+            }
+            // Auto play next episode if prompt is visible
+            const nextPlayBtn = document.querySelector('#next-prompt-container .btn-primary');
+            if (nextPlayBtn) nextPlayBtn.click();
           }
         }
       }
@@ -3494,6 +3610,9 @@
       const trailer = data.videos && data.videos.results ? data.videos.results.find(v => v.type === 'Trailer' && v.site === 'YouTube') : null;
       const trailerHtml = trailer ? `<button class="btn btn-info" onclick="playTrailer('${trailer.key}')" style="flex: 1 1 140px;">${trailerIcon} Watch Trailer</button>` : '';
 
+      const dlIconSVG = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="margin-right: 5px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`;
+      const downloadBtnHtml = `<button class="btn btn-info" onclick="openDownloadModal(${id}, '${type}', 1, 1)" style="flex: 1 1 140px; background: rgba(70, 211, 105, 0.2); color: #46d369; border: 1px solid rgba(70, 211, 105, 0.3);">${dlIconSVG} Download</button>`;
+
       // Detect if the media is Anime (must be Animation genre AND Japanese language)
       const isAnime = data.original_language === 'ja' && data.genres && data.genres.some(g => g.id === 16);
       window.currentIsAnime = isAnime;
@@ -3591,6 +3710,7 @@
             ${top5Html}
             ${dropdownHtml}
             ${trailer ? trailerHtml : ''}
+            ${downloadBtnHtml}
             <button class="btn btn-info" id="watchlist-toggle-btn" onclick="handleWatchlistToggle()" style="flex: 1 1 100%;">${watchlistBtnText}</button>
           </div>
           ${s3DisclaimerHtml}
@@ -3745,6 +3865,7 @@
               <div class="ep-title">${ep.episode_number}. ${ep.name}</div>
               <div style="display: flex; align-items: center; gap: 10px;">
                 <div class="ep-runtime">${ep.runtime ? ep.runtime + 'm' : ''}</div>
+                ${!isComingSoon ? `<div onclick="event.stopPropagation(); openDownloadModal(${id}, 'tv', ${season}, ${ep.episode_number})" style="color: #46d369; cursor: pointer; display: flex; align-items: center; padding: 5px; background: rgba(70,211,105,0.1); border-radius: 6px;" title="Download Episode"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></div>` : ''}
                 ${!isComingSoon ? `<div id="watch-icon-${id}-${season}-${ep.episode_number}" onclick="toggleWatched(event, ${id}, ${season}, ${ep.episode_number})" style="color: ${watchIconColor}; cursor: pointer; display: flex; align-items: center; transition: color 0.2s ease;" title="Toggle Watched">${watchIconSvg}</div>` : ''}
               </div>
             </div>
@@ -3834,25 +3955,39 @@
         src = customSrc;
       } else {
         let startProgress = '';
-        if (server === 'vidking' || server === 'videasy' || server === 'vidnest') {
+        let vidSyncStartTime = '';
+        if (server === 'vidking' || server === 'videasy' || server === 'vidnest' || server === 'vidsync') {
           const saved = getProgressForId(id);
           if (saved && saved.currentTime) {
             startProgress = `&progress=${Math.floor(saved.currentTime)}`;
+            if (server === 'vidsync') {
+              vidSyncStartTime = `&startTime=${Math.floor(saved.currentTime)}`;
+            }
           }
         }
 
         if (server === 'vidking') src = type === 'movie' ? `https://www.vidking.net/embed/movie/${id}?autoPlay=true&color=e50914${startProgress}` : `https://www.vidking.net/embed/tv/${id}/${season}/${episode}?autoPlay=true&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true${startProgress}`;
         else if (server === 'videasy') src = type === 'movie' ? `https://player.videasy.net/movie/${id}?color=e50914${startProgress}` : `https://player.videasy.net/tv/${id}/${season}/${episode}?nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&color=e50914${startProgress}`;
-        else if (server === 'vidcore') src = type === 'movie' ? `https://vidcore.net/movie/${id}` : `https://vidcore.net/tv/${id}/${season}/${episode}`;
+        else if (server === 'vidcore') {
+          let timeParam = '';
+          const saved = getProgressForId(id);
+          if (saved && saved.currentTime) timeParam = `&startAt=${Math.floor(saved.currentTime)}`;
+          src = type === 'movie' ? `https://vidcore.net/movie/${id}?autoPlay=true&theme=46d369${timeParam}` : `https://vidcore.net/tv/${id}/${season}/${episode}?autoPlay=true&theme=46d369${timeParam}`;
+        }
         else if (server === 'amri') src = type === 'movie' ? `https://amri.gg/movie/${id}` : `https://amri.gg/tv/${id}/${season}/${episode}`;
         else if (server === 'vidlink') src = type === 'movie' ? `https://vidlink.pro/movie/${id}` : `https://vidlink.pro/tv/${id}/${season}/${episode}`;
         else if (server === 'vidsrc-to') src = type === 'movie' ? `https://vidsrc.me/embed/movie?tmdb=${id}` : `https://vidsrc.me/embed/tv?tmdb=${id}&season=${season}&episode=${episode}`;
         else if (server === 'vidsrc-cc') src = type === 'movie' ? `https://vidsrc.cc/v2/embed/movie/${id}` : `https://vidsrc.cc/v2/embed/tv/${id}/${season}/${episode}`;
         else if (server === 'vidnest') src = type === 'movie' ? `https://vidnest.fun/movie/${id}?servericon=hide${startProgress}` : `https://vidnest.fun/tv/${id}/${season}/${episode}?servericon=hide${startProgress}`;
-        else if (server === 'vidsync') src = type === 'movie' ? `https://vidsync.xyz/embed/movie/${id}?autoPlay=true&theme=e50914` : `https://vidsync.xyz/embed/tv/${id}/${season}/${episode}?autoPlay=true&autoNext=true&theme=e50914`;
+        else if (server === 'vidsync') src = type === 'movie' ? `https://vidsync.xyz/embed/movie/${id}?autoPlay=true&theme=e50914${vidSyncStartTime}` : `https://vidsync.xyz/embed/tv/${id}/${season}/${episode}?autoPlay=true&autoNext=true&theme=e50914${vidSyncStartTime}`;
         else if (server === '111movies') src = type === 'movie' ? `https://111movies.com/movie/${id}` : `https://111movies.com/tv/${id}/${season}/${episode}`;
         else if (server === 'vidfast') src = type === 'movie' ? `https://vidfast.pro/movie/${id}?autoPlay=true` : `https://vidfast.pro/tv/${id}/${season}/${episode}?autoPlay=true`;
-        else if (server === 'cinesrc') src = type === 'movie' ? `https://cinesrc.st/embed/movie/${id}` : `https://cinesrc.st/embed/tv/${id}?s=${season}&e=${episode}`;
+        else if (server === 'cinesrc') {
+          let timeParam = '';
+          const saved = getProgressForId(id);
+          if (saved && saved.currentTime) timeParam = `&time=${Math.floor(saved.currentTime)}`;
+          src = type === 'movie' ? `https://cinesrc.st/embed/movie/${id}?autoplay=true&color=%23e50914${timeParam}` : `https://cinesrc.st/embed/tv/${id}?s=${season}&e=${episode}&autoplay=true&autonext=true&autoskip=true&color=%23e50914${timeParam}`;
+        }
         else if (server === 'mapple') src = type === 'movie' ? `https://mapple.uk/watch/movie/${id}` : `https://mapple.uk/watch/tv/${id}-${season}-${episode}`;
         else if (server === 'moviesapi') src = type === 'movie' ? `https://moviesapi.to/movie/${id}` : `https://moviesapi.to/tv/${id}-${season}-${episode}`;
         else if (server === 'rivestream') src = type === 'movie' ? `https://www.rivestream.app/embed?type=movie&id=${id}` : `https://www.rivestream.app/embed?type=tv&id=${id}&season=${season}&episode=${episode}`;
@@ -3866,6 +4001,40 @@
         else if (server === 'vidsrc-wtf') src = type === 'movie' ? `https://vidsrc.wtf/api/1/movie/?id=${id}&color=e50914&autoPlay=true` : `https://vidsrc.wtf/api/1/tv/?id=${id}&s=${season}&e=${episode}&color=e50914&autoPlay=true`;
         else if (server === 'zxcstream') src = type === 'movie' ? `https://www.zxcstream.xyz/player/movie/${id}?autoplay=true` : `https://www.zxcstream.xyz/player/tv/${id}/${season}/${episode}?autoplay=true`;
         else src = type === 'movie' ? `https://www.vidking.net/embed/movie/${id}?autoPlay=true&color=e50914${startProgress}` : `https://www.vidking.net/embed/tv/${id}/${season}/${episode}?autoPlay=true&nextEpisode=true&episodeSelector=true${startProgress}`;
+      }
+
+      // Manual watched fallback for servers without progress tracking API
+      if (server === 'rivestream' || server === 'zxcstream' || server === '1embed') {
+        const title = itemMeta ? (itemMeta.title || itemMeta.name || itemMeta.original_name || "Unknown") : "Unknown";
+        const poster = itemMeta && itemMeta.poster_path ? `${IMG_URL}${itemMeta.poster_path}` : "";
+        
+        let cw = getContinueWatching();
+        cw = cw.filter(c_id => String(c_id) !== String(id));
+        cw.unshift(id);
+        if (cw.length > 20) cw = cw.slice(0, 20);
+        localStorage.setItem('continue_watching', JSON.stringify(cw));
+        
+        const savedObj = {
+          id: id,
+          mediaType: type,
+          currentTime: 0,
+          duration: 100,
+          progress: 1, // Treat it as fully watched 
+          title: title,
+          poster: poster,
+          updatedAt: Date.now()
+        };
+        localStorage.setItem(`progress_${id}`, JSON.stringify(savedObj));
+
+        if (type === 'tv' || type === 'anime') {
+          const key = `watched_${id}_${season}_${episode}`;
+          localStorage.setItem(key, 'true');
+          const icon = document.getElementById(`watch-icon-${id}-${season}-${episode}`);
+          if (icon) {
+            icon.style.color = '#46d369';
+            icon.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"></path></svg>`;
+          }
+        }
       }
 
       playerIframe.setAttribute('data-tmdb-id', id);
@@ -4137,6 +4306,159 @@
           }
         }
       } catch (e) { }
+    });
+
+    // VidSync listener
+    window.addEventListener("message", function (event) {
+      try {
+        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+        if (data && data.type === "VIDSYNC_PLAYER_EVENT" && data.data) {
+          const { event: eventName, currentTime, duration } = data.data;
+          
+          const playerIframe = document.getElementById('player-iframe');
+          if (!playerIframe) return;
+
+          let meta = {};
+          if (playerIframe.dataset.meta) {
+            meta = JSON.parse(playerIframe.dataset.meta);
+          }
+          
+          const tmdbId = playerIframe.getAttribute('data-tmdb-id');
+          const season = playerIframe.getAttribute('data-season') || "1";
+          const episode = playerIframe.getAttribute('data-episode') || "1";
+          const mediaType = playerIframe.getAttribute('data-type') || "movie";
+
+          // Dynamic timing: trigger next prompt near end credits
+          if (!window.nextPromptShown && duration > 0 && currentTime > 0) {
+            const timeRemaining = duration - currentTime;
+            let threshold;
+            if (duration <= 1800) threshold = 90;
+            else if (duration <= 3600) threshold = 120;
+            else threshold = 300;
+
+            if (timeRemaining <= threshold && timeRemaining > 0) {
+              window.nextPromptShown = true;
+              showNextPrompt(meta);
+            }
+          }
+
+          // Save progress
+          const progressPercent = duration ? (currentTime / duration) : 0;
+          if (progressPercent >= 0.01 && progressPercent <= 0.95 && tmdbId) {
+            const title = meta.title || meta.name || meta.original_name || "Unknown";
+            const poster = meta.poster_path ? `${IMG_URL}${meta.poster_path}` : "";
+
+            const savedObj = {
+              id: tmdbId,
+              mediaType: mediaType || meta.mediaType || "movie",
+              currentTime: currentTime,
+              duration: duration,
+              progress: progressPercent,
+              title: title,
+              poster: poster,
+              updatedAt: Date.now()
+            };
+
+            localStorage.setItem(`progress_${tmdbId}`, JSON.stringify(savedObj));
+
+            let cw = getContinueWatching();
+            cw = cw.filter(c_id => String(c_id) !== String(tmdbId));
+            cw.unshift(tmdbId);
+            if (cw.length > 20) cw = cw.slice(0, 20);
+            localStorage.setItem('continue_watching', JSON.stringify(cw));
+          }
+
+          // Handle Watched status
+          if (mediaType === 'tv' && progressPercent * 100 > 85) {
+            const key = `watched_${tmdbId}_${season}_${episode}`;
+            localStorage.setItem(key, 'true');
+            const icon = document.getElementById(`watch-icon-${tmdbId}-${season}-${episode}`);
+            if (icon) {
+              icon.style.color = '#46d369';
+              icon.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"></path></svg>`;
+            }
+          }
+        }
+      } catch (e) { }
+    });
+
+    // Cinesrc listener
+    window.addEventListener("message", function (event) {
+      if (event.origin !== 'https://cinesrc.st') return;
+      try {
+        const { type, ...data } = event.data;
+        const playerIframe = document.getElementById('player-iframe');
+        if (!playerIframe) return;
+
+        let meta = {};
+        if (playerIframe.dataset.meta) {
+          meta = JSON.parse(playerIframe.dataset.meta);
+        }
+        
+        const tmdbId = playerIframe.getAttribute('data-tmdb-id');
+        const season = playerIframe.getAttribute('data-season') || "1";
+        const episode = playerIframe.getAttribute('data-episode') || "1";
+        const mediaType = playerIframe.getAttribute('data-type') || "movie";
+
+        if (type === 'cinesrc:timeupdate') {
+          const currentTime = data.currentTime;
+          const duration = data.duration;
+          
+          if (!window.nextPromptShown && duration > 0 && currentTime > 0) {
+            const timeRemaining = duration - currentTime;
+            let threshold;
+            if (duration <= 1800) threshold = 90;
+            else if (duration <= 3600) threshold = 120;
+            else threshold = 300;
+
+            if (timeRemaining <= threshold && timeRemaining > 0) {
+              window.nextPromptShown = true;
+              showNextPrompt(meta);
+            }
+          }
+
+          const progressPercent = duration ? (currentTime / duration) : 0;
+          if (progressPercent >= 0.01 && progressPercent <= 0.95 && tmdbId) {
+            const title = meta.title || meta.name || meta.original_name || "Unknown";
+            const poster = meta.poster_path ? `${IMG_URL}${meta.poster_path}` : "";
+
+            const savedObj = {
+              id: tmdbId,
+              mediaType: mediaType || meta.mediaType || "movie",
+              currentTime: currentTime,
+              duration: duration,
+              progress: progressPercent,
+              title: title,
+              poster: poster,
+              updatedAt: Date.now()
+            };
+
+            localStorage.setItem(`progress_${tmdbId}`, JSON.stringify(savedObj));
+
+            let cw = getContinueWatching();
+            cw = cw.filter(c_id => String(c_id) !== String(tmdbId));
+            cw.unshift(tmdbId);
+            if (cw.length > 20) cw = cw.slice(0, 20);
+            localStorage.setItem('continue_watching', JSON.stringify(cw));
+          }
+        } else if (type === 'cinesrc:ended') {
+          if (mediaType === 'tv' || mediaType === 'anime') {
+            const key = `watched_${tmdbId}_${season}_${episode}`;
+            localStorage.setItem(key, 'true');
+            const icon = document.getElementById(`watch-icon-${tmdbId}-${season}-${episode}`);
+            if (icon) {
+              icon.style.color = '#46d369';
+              icon.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"></path></svg>`;
+            }
+          }
+        } else if (type === 'cinesrc:nextepisode') {
+          if (data && data.season && data.episode) {
+            setTimeout(() => {
+              openPlayer(tmdbId, mediaType, data.season, data.episode, 'cinesrc');
+            }, 500);
+          }
+        }
+      } catch (e) {}
     });
 
     document.addEventListener("DOMContentLoaded", initApp);
