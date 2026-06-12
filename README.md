@@ -1,4 +1,4 @@
-# PRISM - Premium Streaming Interface (v1.6)
+# PRISM - Premium Streaming Interface
 
 PRISM is a high-performance, single-page streaming interface built with vanilla JavaScript, HTML5, and CSS3. This project is designed as a **UI/UX showcase** to demonstrate modern web development principles, including glassmorphism, dynamic animations, and complex state management without external frameworks.
 
@@ -10,7 +10,7 @@ PRISM is a high-performance, single-page streaming interface built with vanilla 
 - **Copyright**: If you are a copyright holder, please contact the respective content providers directly. PRISM acts solely as a user interface layer and has no control over external media.
 - **Privacy**: No user data is collected. All personalization features (Watchlist, History) are stored locally in the user's browser.
 
-## 🚀 Features (Updated v1.6)
+## 🚀 Features
 
 - **State-of-the-Art UI**: Glassmorphic navigation, custom Netflix-style scrollbars, pulsing skeleton loaders, and an auto-rotating hero banner.
 - **Movies & TV Shows**: Infinite scroll discovery, multi-provider filtering (Netflix, Disney+, etc.), and genre-based sorting.
