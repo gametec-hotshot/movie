@@ -14,12 +14,12 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" href="logo.png">
-  <meta name="version" content="1.4.2">
+  <meta name="version" content="1.6">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <script>window.isAdBlockScriptLoaded = false;</script>
-  <script src="advertisement.js?v=1.4.2" onerror="window.isAdBlockScriptLoaded = false;"></script>
+  <script src="advertisement.js?v=1.6" onerror="window.isAdBlockScriptLoaded = false;"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" as="style"
@@ -2614,6 +2614,20 @@
     </div>
   </div>
 
+  <!-- Stream Selector Modal -->
+  <div id="stream-selector-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: #141414; border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0; font-size: 1.5rem;">Select a Stream</h2>
+        <button onclick="document.getElementById('stream-selector-modal').style.display='none'" style="background: none; border: none; color: #aaa; font-size: 1.5rem; cursor: pointer;">✕</button>
+      </div>
+      <p style="color: #aaa; font-size: 0.9rem; margin-bottom: 20px;">If a stream buffers or pauses on iOS, try selecting a different server.</p>
+      <div id="stream-selector-list" style="display: flex; flex-direction: column; gap: 10px;">
+        <!-- Streams go here -->
+      </div>
+    </div>
+  </div>
+
   <div id="cache-settings-view" class="cache-settings-page hidden">
     <div class="cache-header">
       <div class="cache-header-left">
@@ -2711,7 +2725,7 @@
   <footer class="site-footer">
     <p>&copy; 2026 Prisma Streaming. Built for seamless entertainment.</p>
     <p><a href="javascript:void(0)" onclick="showLegal('tos')">Terms of Service</a> | <a href="javascript:void(0)"
-        onclick="showLegal('privacy')">Privacy Policy</a> | <span class="version-tag">1.5</span></p>
+        onclick="showLegal('privacy')">Privacy Policy</a> | <span class="version-tag">1.6</span></p>
   </footer>
 
   <div class="modal" id="app-info-modal">
@@ -2720,15 +2734,15 @@
       <button class="close-btn" id="close-app-info"
         style="top: 10px; right: 10px; width: 40px; height: 40px; font-size: 24px;">&times;</button>
       <div style="text-align: center; margin-bottom: 25px;">
-        <h2 style="color: #fff; margin-bottom: 5px;">Prisma <span style="color: var(--primary-color);">1.5</span></h2>
+        <h2 style="color: #fff; margin-bottom: 5px;">Prisma <span style="color: var(--primary-color);">1.6</span></h2>
         <p style="color: #aaa; font-size: 0.9rem;">Built for seamless entertainment.</p>
       </div>
       <div style="text-align: left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; margin-bottom: 25px;">
-        <h3 style="color: #fff; margin-bottom: 10px; font-size: 1.1rem;">What's New in 1.5</h3>
+        <h3 style="color: #fff; margin-bottom: 10px; font-size: 1.1rem;">What's New in 1.6</h3>
         <ul style="color: #ccc; font-size: 0.9rem; line-height: 1.6; padding-left: 20px;">
-          <li><strong>Universal Tracker:</strong> Automated watch progress tracking.</li>
-          <li><strong>Cache Management:</strong> Export, Import, and safely clear local data.</li>
-          <li><strong>Autoplay Settings:</strong> Globally enable/disable cross-server autoplay.</li>
+          <li><strong>Stream Selector:</strong> Choose between multiple backup servers for Live Matches.</li>
+          <li><strong>Mobile UI:</strong> Added a sleek hamburger menu for portrait viewing.</li>
+          <li><strong>Bug Fixes:</strong> Resolved iPad buffering drops and layout spacing issues.</li>
         </ul>
       </div>
       <div style="text-align: center;">
@@ -6649,34 +6663,68 @@
           alert('No streams available for this match yet.');
           return;
         }
-        
-        // Take the first source
-        const source = sources[0];
-        const res = await fetch(`https://streamed.pk/api/stream/${source.source}/${source.id}`);
-        const streams = await res.json();
-        
-        if (!streams || streams.length === 0) {
+
+        document.getElementById('sports-loader').classList.add('active');
+
+        // Fetch all sources concurrently
+        const fetchPromises = sources.map(source => 
+          fetch(`https://streamed.pk/api/stream/${source.source}/${source.id}`)
+            .then(res => res.ok ? res.json() : [])
+            .catch(() => [])
+        );
+
+        const results = await Promise.all(fetchPromises);
+        document.getElementById('sports-loader').classList.remove('active');
+
+        // Flatten all streams
+        let allStreams = [];
+        results.forEach(streamsArray => {
+          if (Array.isArray(streamsArray)) {
+            allStreams = allStreams.concat(streamsArray);
+          }
+        });
+
+        if (allStreams.length === 0) {
           alert('No streams available right now.');
           return;
         }
 
-        let embedUrl = streams[0].embedUrl || streams[0].url || streams[0].link;
-        if (!embedUrl) {
-          alert('Stream URL not found.');
-          return;
-        }
+        const listContainer = document.getElementById('stream-selector-list');
+        listContainer.innerHTML = '';
 
-        playerIframe.removeAttribute('sandbox');
-        playerIframe.src = embedUrl;
-        
-        const switchBtn = document.getElementById('ac-switch-btn');
-        if(switchBtn) switchBtn.style.display = 'none';
-        
-        playerModal.classList.add('active');
+        allStreams.forEach(stream => {
+          const embedUrl = stream.embedUrl || stream.url || stream.link;
+          if (!embedUrl) return;
+
+          const quality = stream.hd ? '<span style="background:#e50914;color:white;padding:2px 6px;border-radius:4px;font-size:0.7rem;font-weight:bold;">HD</span>' : '<span style="background:#555;color:white;padding:2px 6px;border-radius:4px;font-size:0.7rem;font-weight:bold;">SD</span>';
+          
+          listContainer.innerHTML += `
+            <button onclick="playSelectedStream('${embedUrl}')" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; display: flex; justify-content: space-between; align-items: center; color: white; cursor: pointer; transition: background 0.2s; text-align: left;">
+              <div>
+                <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;">Server ${stream.streamNo || '?'} <span style="font-size:0.8rem;color:#aaa;font-weight:normal;text-transform:capitalize;">(${stream.source || 'Unknown'})</span></div>
+                <div style="color: #ccc; font-size: 0.9rem;">${stream.language || 'Unknown Language'}</div>
+              </div>
+              <div>${quality}</div>
+            </button>
+          `;
+        });
+
+        document.getElementById('stream-selector-modal').style.display = 'flex';
+
       } catch (e) {
         console.error("Failed to load stream", e);
+        document.getElementById('sports-loader').classList.remove('active');
         alert("Failed to connect to the stream provider.");
       }
+    };
+
+    window.playSelectedStream = function(embedUrl) {
+      document.getElementById('stream-selector-modal').style.display = 'none';
+      playerIframe.removeAttribute('sandbox');
+      playerIframe.src = embedUrl;
+      const switchBtn = document.getElementById('ac-switch-btn');
+      if(switchBtn) switchBtn.style.display = 'none';
+      playerModal.classList.add('active');
     };
 
     window.fetchCdnChannels = async function() {
