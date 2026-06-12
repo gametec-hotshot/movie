@@ -14,12 +14,12 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" href="logo.png">
-  <meta name="version" content="1.4.1">
+  <meta name="version" content="1.4.2">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <script>window.isAdBlockScriptLoaded = false;</script>
-  <script src="advertisement.js?v=1.4.1" onerror="window.isAdBlockScriptLoaded = false;"></script>
+  <script src="advertisement.js?v=1.4.2" onerror="window.isAdBlockScriptLoaded = false;"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" as="style"
@@ -1500,6 +1500,30 @@
 
       .nav-links {
         display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: rgba(20, 20, 20, 0.98);
+        padding: 20px;
+        gap: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+      }
+
+      .nav-links.active {
+        display: flex;
+      }
+
+      .mobile-menu-btn {
+        display: flex !important;
+        background: transparent;
+        border: none;
+        color: white;
+        margin-right: 15px;
+        cursor: pointer;
+        padding: 5px;
       }
 
       .card {
@@ -1522,7 +1546,7 @@
 
       .logo {
         font-size: 20px;
-        margin-right: 15px;
+        margin-right: auto;
       }
 
       .details-hero {
@@ -2485,6 +2509,9 @@
 <body>
 
   <nav id="navbar">
+    <button id="mobile-menu-btn" class="mobile-menu-btn" style="display: none;" title="Menu">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"></path></svg>
+    </button>
     <a href="#" class="logo" id="home-link">Prisma</a>
     <ul class="nav-links">
       <li class="active">Home</li>
@@ -2541,6 +2568,23 @@
   </div>
 
   <div class="search-results" id="sports-container" style="display: none;">
+    <!-- Ads Disclaimer Banner -->
+    <div style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); padding: 16px 24px; border-radius: 16px; margin-bottom: 25px; display: flex; align-items: center; gap: 20px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);">
+      <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(229, 9, 20, 0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e50914" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <div>
+        <h4 style="margin: 0 0 4px 0; color: #fff; font-size: 0.95rem; font-weight: 600; letter-spacing: 0.5px;">A note about third-party streams</h4>
+        <p style="margin: 0; color: rgba(255, 255, 255, 0.6); font-size: 0.85rem; line-height: 1.5;">
+          These sports streams come from third-party servers, which means you might see some pop-up ads from the streamers. Since this is a personal, unfunded project, I can't control what those servers show right now. However, I promise I'm actively working on a completely ad-free solution for the future. Thanks for bearing with me, and enjoy the games!
+        </p>
+      </div>
+    </div>
+
     <div class="sports-tabs-container" style="display: flex; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
       <button id="tab-channels" class="sports-tab active" onclick="switchSportsTab('channels')" style="background: transparent; border: none; color: #fff; font-size: 1.2rem; font-weight: bold; cursor: pointer; padding: 5px 10px; border-bottom: 2px solid #e50914;">24/7 Channels</button>
       <button id="tab-matches" class="sports-tab" onclick="switchSportsTab('matches')" style="background: transparent; border: none; color: #888; font-size: 1.2rem; font-weight: bold; cursor: pointer; padding: 5px 10px; border-bottom: 2px solid transparent;">Live Matches</button>
@@ -2548,7 +2592,7 @@
 
     <!-- Channels View -->
     <div id="sports-channels-view">
-      <div class="search-grid" id="channels-grid"></div>
+      <div class="search-grid" id="channels-grid" style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px;"></div>
       <div class="loader" id="channels-loader" style="display: none;">
         <div class="spinner"></div>
       </div>
@@ -2996,6 +3040,20 @@
     const detailsClearSearch = document.getElementById('details-clear-search');
     let detailsSearchTimeout;
     const navItems = document.querySelectorAll('.nav-links li');
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const navLinksUl = document.querySelector('.nav-links');
+
+    if (mobileMenuBtn) {
+      mobileMenuBtn.addEventListener('click', () => {
+        navLinksUl.classList.toggle('active');
+      });
+    }
+
+    navItems.forEach(li => {
+      li.addEventListener('click', () => {
+        if (navLinksUl.classList.contains('active')) navLinksUl.classList.remove('active');
+      });
+    });
 
     const hero = document.getElementById('hero');
     const heroTitle = document.getElementById('hero-title');
@@ -4130,6 +4188,16 @@
     searchInput.addEventListener('input', (e) => {
       const query = e.target.value.trim();
 
+      if (sportsContainer.style.display === 'block') {
+        if (query.length > 0) {
+          clearSearchBtn.classList.add('active');
+        } else {
+          clearSearchBtn.classList.remove('active');
+        }
+        if (window.filterSports) window.filterSports(query);
+        return;
+      }
+
       if (query.length > 0) {
         clearSearchBtn.classList.add('active');
         debouncedSearch(query);
@@ -4145,6 +4213,12 @@
     clearSearchBtn.addEventListener('click', () => {
       searchInput.value = '';
       clearSearchBtn.classList.remove('active');
+      
+      if (sportsContainer.style.display === 'block') {
+        if (window.filterSports) window.filterSports('');
+        return;
+      }
+
       if (!detailsView.classList.contains('active')) {
         if (history.state && history.state.view === 'search') history.back();
         else showMainContent();
@@ -6441,6 +6515,38 @@
     window.channelsLoaded = false;
     window.matchesLoaded = false;
 
+    window.filterSports = function(query) {
+      const lowerQuery = query.toLowerCase();
+      const isChannels = document.getElementById('sports-channels-view').style.display === 'block';
+      const grid = isChannels ? document.getElementById('channels-grid') : document.getElementById('sports-grid');
+      const cards = grid.querySelectorAll('.card');
+      
+      if (!cards || cards.length === 0) return;
+
+      let hasVisible = false;
+      cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        if (text.includes(lowerQuery)) {
+          card.style.display = 'flex';
+          hasVisible = true;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      const emptyMsgId = isChannels ? 'channels-empty-msg' : 'sports-empty-msg';
+      const emptyMsg = document.getElementById(emptyMsgId);
+      
+      if (!hasVisible && query !== '') {
+        if (!emptyMsg.dataset.originalText) emptyMsg.dataset.originalText = emptyMsg.innerText;
+        emptyMsg.innerText = `No results found for "${query}"`;
+        emptyMsg.style.display = 'block';
+      } else if (hasVisible) {
+        emptyMsg.style.display = 'none';
+        if (emptyMsg.dataset.originalText) emptyMsg.innerText = emptyMsg.dataset.originalText;
+      }
+    };
+
     window.switchSportsTab = function(tab) {
       document.getElementById('tab-channels').style.color = tab === 'channels' ? '#fff' : '#888';
       document.getElementById('tab-channels').style.borderBottomColor = tab === 'channels' ? '#e50914' : 'transparent';
@@ -6454,6 +6560,10 @@
         fetchCdnChannels();
       } else if (tab === 'matches' && !window.matchesLoaded) {
         initSportsAPI();
+      } else {
+        if (document.getElementById('search-input').value) {
+          window.filterSports(document.getElementById('search-input').value.trim());
+        }
       }
     };
 
@@ -6505,16 +6615,17 @@
             ? `<span style="background: #e50914; color: white; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.7rem;">LIVE</span>`
             : `<span style="background: #555; color: white; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.7rem;">UPCOMING at ${timeStr}</span>`;
 
+          const posterUrl = match.poster ? `https://streamed.pk${match.poster}` : 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
           return `
-            <div class="card" onclick="playStreamedMatch('${encodeURIComponent(JSON.stringify(match.sources))}')" style="min-height: 150px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: transform 0.2s, background 0.2s;">
-              <div style="font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">
-                ${dateStr} • ${timeStr}
+            <div class="card" onclick="playStreamedMatch('${encodeURIComponent(JSON.stringify(match.sources))}')">
+              <img src="${posterUrl}" onerror="this.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='">
+              <div class="card-badge badge-type" style="background: rgba(0,0,0,0.8);">${dateStr}</div>
+              <div class="card-badge badge-rating">${isLive ? 'LIVE' : timeStr}</div>
+              <div class="card-play-overlay">
+                <button class="card-play-btn">▶</button>
               </div>
-              <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 5px;">
-                <div style="font-weight: bold; color: #fff; font-size: 1rem;">${match.title}</div>
-              </div>
-              <div style="margin-top: 15px; text-align: center;">
-                ${badgeHtml}
+              <div class="card-info">
+                <div class="card-title">${match.title}</div>
               </div>
             </div>
           `;
@@ -6525,6 +6636,9 @@
         emptyMsg.style.display = 'block';
       } finally {
         loader.classList.remove('active');
+        if (document.getElementById('search-input').value) {
+          window.filterSports(document.getElementById('search-input').value.trim());
+        }
       }
     };
 
@@ -6585,17 +6699,20 @@
           return;
         }
 
+        const sortedChannels = data.channels.sort((a, b) => (b.viewers || 0) - (a.viewers || 0));
+
         window.channelsLoaded = true;
-        grid.innerHTML = data.channels.map(channel => {
+        grid.innerHTML = sortedChannels.map(channel => {
           const statusColor = channel.status === 'online' ? '#4CAF50' : '#e94560';
           return `
-            <div class="card" onclick="playCdnChannel('${channel.url}')" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: transform 0.2s;">
-              <img src="${channel.image || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}" style="width: 50px; height: 50px; object-fit: contain; background: #fff; border-radius: 8px; padding: 5px;" onerror="this.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='">
-              <div style="flex-grow: 1;">
-                <div style="font-weight: bold; color: #fff; font-size: 1rem;">${channel.name}</div>
-                <div style="font-size: 0.8rem; color: #aaa; margin-top: 5px;">
-                  <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${statusColor}; margin-right: 5px;"></span>
-                  ${channel.status.toUpperCase()} • ${channel.viewers || 0} viewers
+            <div class="card" onclick="playCdnChannel('${channel.url}')" style="aspect-ratio: auto; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 8px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: transform 0.2s, background 0.2s;">
+              <img src="${channel.image || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}" style="width: 32px; height: 32px; object-fit: contain; background: #fff; border-radius: 6px; padding: 2px; flex-shrink: 0;" onerror="this.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='">
+              <div style="flex-grow: 1; min-width: 0;">
+                <div style="font-weight: 600; color: #fff; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${channel.name}</div>
+                <div style="font-size: 0.7rem; color: #aaa; margin-top: 3px; display: flex; align-items: center; gap: 8px;">
+                  <span style="display: flex; align-items: center; gap: 4px;"><span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: ${statusColor};"></span>${channel.status.toUpperCase()}</span>
+                  <span style="color: #666;">•</span>
+                  <span>👁 ${channel.viewers || 0}</span>
                 </div>
               </div>
             </div>
@@ -6608,6 +6725,9 @@
       } finally {
         loader.style.display = 'none';
         loader.classList.remove('active');
+        if (document.getElementById('search-input').value) {
+          window.filterSports(document.getElementById('search-input').value.trim());
+        }
       }
     };
 
