@@ -1,4 +1,4 @@
-# PRISM - Premium Streaming Interface
+# PRISM - Premium Streaming Interface (v1.6)
 
 PRISM is a high-performance, single-page streaming interface built with vanilla JavaScript, HTML5, and CSS3. This project is designed as a **UI/UX showcase** to demonstrate modern web development principles, including glassmorphism, dynamic animations, and complex state management without external frameworks.
 
@@ -10,21 +10,33 @@ PRISM is a high-performance, single-page streaming interface built with vanilla 
 - **Copyright**: If you are a copyright holder, please contact the respective content providers directly. PRISM acts solely as a user interface layer and has no control over external media.
 - **Privacy**: No user data is collected. All personalization features (Watchlist, History) are stored locally in the user's browser.
 
-## 🚀 Features
+## 🚀 Features (Updated v1.6)
 
-- **State-of-the-Art UI**: Glassmorphic navigation, custom Netflix-style scrollbars, and pulsing skeleton loaders.
-- **Dynamic Discovery**: Infinite scroll, multi-provider filtering (Netflix, Disney+, etc.), and genre-based sorting.
-- **Native Experience**: Fully PWA-ready for home-screen installation on iOS and Android. Includes safe-area/notch support.
-- **Smart Hero**: An auto-rotating hero banner featuring the week's top trending titles.
-- **Interactive Details**: Cast credits with actor search, "More Like This" recommendations, and direct YouTube trailer links.
-- **Watchlist & Progress**: Locally persistent "My List" and "Continue Watching" queues.
+- **State-of-the-Art UI**: Glassmorphic navigation, custom Netflix-style scrollbars, pulsing skeleton loaders, and an auto-rotating hero banner.
+- **Movies & TV Shows**: Infinite scroll discovery, multi-provider filtering (Netflix, Disney+, etc.), and genre-based sorting.
+- **Dedicated Anime Hub**: Seamless integration of Top Rated, Trending, and Popular anime series.
+- **Live Sports Ecosystem**:
+  - **24/7 Channels**: Real-time sorted grid of live TV channels ordered by active viewer count.
+  - **Live Matches**: Detailed match schedules (Football, Cricket, etc.) with real-time "LIVE" or "UPCOMING" badges.
+  - **Stream Selector Modal**: Advanced multi-server selection allowing users to choose specific streaming servers, languages, and quality (HD/SD) to bypass network congestion.
+- **Advanced Player Engine**:
+  - Unified modal player supporting third-party iframes and direct `.m3u8` video streaming.
+  - **Smart Autoplay**: Configurable auto-play for next TV episodes with global toggle settings.
+  - **Auto-Close Ad Detection**: Intelligent background detection to automatically close ad-popups triggered by third-party streaming sites.
+- **Universal Watch Tracker**: Automated, persistent progress tracking that remembers exactly which season and episode you are on for any TV show or Anime.
+- **Cache Management**: Powerful local storage dashboard allowing users to completely control their data by Exporting, Importing, and safely clearing their watch history and application cache.
+- **Mobile & Native Experience**: Fully responsive design with a sleek mobile hamburger menu, PWA-ready for home-screen installation on iOS and Android, and safe-area/notch support.
+- **Interactive Details**: Deep-dive modals featuring cast credits with actor search, "More Like This" recommendations, comprehensive season/episode browsers, and direct YouTube trailer links.
+- **Watchlist**: Locally persistent "My List" queue to save titles for later.
 
 ## 🛠️ Technology Stack
 
 - **Frontend**: Vanilla JavaScript (ES6+), HTML5, CSS3.
-- **API**: TMDb API (The Movie Database).
-- **Persistence**: Browser LocalStorage.
-- **Optimization**: Intersection Observer API for animations and lazy loading.
+- **APIs Used**: 
+  - TMDb API (The Movie Database) for Metadata.
+  - Streamed.pk API & CDNLivetv API for Live Sports.
+- **Persistence**: Browser LocalStorage & IndexedDB (Cache Storage API via Service Workers).
+- **Optimization**: Intersection Observer API for animations/lazy loading, Network-first Service Worker caching.
 
 ## 📦 Setup & Installation
 
