@@ -91,7 +91,6 @@
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      overscroll-behavior-y: contain;
       -webkit-overflow-scrolling: touch;
     }
 
@@ -1722,13 +1721,17 @@
       .details-hero {
         min-height: 100dvh;
         height: auto;
-        padding-top: 40px;
-        padding-bottom: 40px;
-        display: block;
-        /* Stack elements naturally */
+        padding: 40px 6% !important;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
       }
 
       .details-content {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
         padding-top: 20px;
       }
 
