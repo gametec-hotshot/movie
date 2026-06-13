@@ -1409,6 +1409,58 @@
       margin-bottom: 20px;
     }
 
+    .switch-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 8px 15px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+    }
+    .switch-container:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+      margin: 0;
+    }
+    .switch input { 
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(255, 255, 255, 0.2);
+      transition: .4s;
+      border-radius: 24px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .switch input:checked + .slider {
+      background-color: #46d369;
+    }
+    .switch input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+
     .season-select {
       background: rgba(255, 255, 255, 0.1);
       color: white;
@@ -2949,6 +3001,12 @@
           </svg>
           <span>App Info</span>
         </div>
+        <div class="settings-dropdown-item" id="trakt-login-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <span id="trakt-login-text">Login to Trakt.tv</span>
+        </div>
       </div>
     </div>
   </nav>
@@ -3103,6 +3161,12 @@
         <span class="cache-stats" id="cache-total-size">Used: 0 KB</span>
       </div>
       <div class="cache-actions">
+        <button class="cache-btn cache-btn-primary" id="trakt-sync-btn" title="Sync Local History to Trakt" style="background: rgba(229, 9, 20, 0.2); border-color: #e50914;">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+          </svg>
+          Sync to Trakt
+        </button>
         <input type="file" id="import-file-input" accept=".json" style="display: none;">
         <button class="cache-btn cache-btn-primary" id="import-cache-btn" title="Import Data">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -4653,6 +4717,57 @@
       catch (e) { return null; }
     }
 
+    function toggleSeasonWatched(id, season) {
+      if (!window.currentSeasonData || !window.currentSeasonData.episodes) return;
+      try {
+        const key = `watched_series_${id}`;
+        const seriesData = JSON.parse(localStorage.getItem(key) || '{}');
+        const watchedInSeason = seriesData[season] || [];
+        
+        const allEpisodes = window.currentSeasonData.episodes.map(ep => parseInt(ep.episode_number));
+        
+        // Check if all episodes are already watched
+        const allWatched = allEpisodes.every(epNum => watchedInSeason.includes(epNum));
+        
+        if (allWatched) {
+          // Unmark all
+          seriesData[season] = watchedInSeason.filter(epNum => !allEpisodes.includes(epNum));
+          if (seriesData[season].length === 0) delete seriesData[season];
+        } else {
+          // Mark all
+          seriesData[season] = [...new Set([...watchedInSeason, ...allEpisodes])];
+        }
+        
+        seriesData._updatedAt = Date.now();
+        localStorage.setItem(key, JSON.stringify(seriesData));
+        
+        // Update the switch state if it exists
+        const toggle = document.getElementById('season-watch-toggle');
+        if (toggle) toggle.checked = !allWatched;
+
+        // Instantly update dropdown option text
+        const seasonSelect = document.getElementById('season-select');
+        if (seasonSelect) {
+          const option = seasonSelect.querySelector(`option[value="${season}"]`);
+          if (option) {
+            option.innerText = `Season ${season}${!allWatched ? ' ✓' : ''}`;
+          }
+        }
+
+        // Instantly update all episode icons on the screen
+        const icons = document.querySelectorAll(`[id^="watch-icon-${id}-${season}-"]`);
+        icons.forEach(icon => {
+          if (allWatched) {
+            icon.style.color = 'rgba(255,255,255,0.4)';
+            icon.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+          } else {
+            icon.style.color = '#46d369';
+            icon.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"></path></svg>`;
+          }
+        });
+      } catch (e) { console.error(e); }
+    }
+
     function markEpisodeWatched(id, season, episode) {
       try {
         const key = `watched_series_${id}`;
@@ -4660,6 +4775,9 @@
         if (!seriesData[season]) seriesData[season] = [];
         if (!seriesData[season].includes(parseInt(episode))) {
           seriesData[season].push(parseInt(episode));
+          if (typeof TraktSync !== 'undefined') {
+            TraktSync.markWatched(id, 'tv', season, episode);
+          }
         }
         seriesData._updatedAt = Date.now();
         localStorage.setItem(key, JSON.stringify(seriesData));
@@ -5651,13 +5769,29 @@
           ${s3DisclaimerHtml}
         `;
       } else {
+        const key = `watched_series_${id}`;
+        let preloadedSeriesData = {};
+        try { preloadedSeriesData = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e) {}
+        
         const seasons = data.seasons ? data.seasons.filter(s => s.season_number > 0) : [];
-        const options = seasons.map(s => `<option value="${s.season_number}">Season ${s.season_number}</option>`).join('');
+        const options = seasons.map(s => {
+          const watchedInSeason = preloadedSeriesData[s.season_number] || [];
+          const isFullyWatched = s.episode_count > 0 && watchedInSeason.length >= s.episode_count;
+          const tick = isFullyWatched ? ' ✓' : '';
+          return `<option value="${s.season_number}">Season ${s.season_number}${tick}</option>`;
+        }).join('');
         extraUI = `
-          <div class="season-selector" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; width: 100%;">
-            <select class="season-select" id="season-select" onchange="loadEpisodes(${id}, this.value)" style="flex: 1 1 100%;">
+          <div class="season-selector" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; width: 100%;">
+            <select class="season-select" id="season-select" onchange="loadEpisodes(${id}, this.value)" style="flex: 1; min-width: 0;">
               ${options}
             </select>
+            <label class="switch-container" title="Toggle entire season as watched or unwatched">
+              <span style="font-size: 0.9rem; color: #fff; font-weight: 500;">Season Watched</span>
+              <div class="switch">
+                <input type="checkbox" id="season-watch-toggle" onchange="toggleSeasonWatched(${id}, document.getElementById('season-select').value)">
+                <span class="slider"></span>
+              </div>
+            </label>
           </div>
           <div class="server-grid">
             ${top5Html}
@@ -5901,6 +6035,15 @@
       const key = `watched_series_${id}`;
       let preloadedSeriesData = {};
       try { preloadedSeriesData = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e) {}
+
+      // Sync season toggle switch state
+      const seasonToggle = document.getElementById('season-watch-toggle');
+      if (seasonToggle && data.episodes) {
+        const allEps = data.episodes.map(ep => parseInt(ep.episode_number));
+        const watchedInSeason = preloadedSeriesData[season] || [];
+        const isSeasonFullyWatched = allEps.length > 0 && allEps.every(ep => watchedInSeason.includes(ep));
+        seasonToggle.checked = isSeasonFullyWatched;
+      }
 
       const epsHtml = paginatedEpisodes.map(ep => {
         const isComingSoon = !ep.still_path;
@@ -6570,7 +6713,9 @@
 
           // If reached the end, mark as watched
           if (seconds >= durationSeconds * 0.9) {
-            if (type === 'tv' || type === 'anime') {
+            if (type === 'movie') {
+              if (typeof TraktSync !== 'undefined') TraktSync.markWatched(id, 'movie');
+            } else if (type === 'tv' || type === 'anime') {
               markEpisodeWatched(id, season, episode);
               const icon = document.getElementById(`watch-icon-${id}-${season}-${episode}`);
               if (icon) {
@@ -8000,10 +8145,43 @@
       } else {
         video.muted = true;
         icon.innerHTML = `<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>`;
-      }
-    };
+        }
+      };
 
-  </script>
+    </script>
+    <script src="trakt.js"></script>
+    <script>
+      // Initialize Trakt UI
+      const traktLoginBtn = document.getElementById('trakt-login-btn');
+      const traktLoginText = document.getElementById('trakt-login-text');
+      const traktSyncBtn = document.getElementById('trakt-sync-btn');
+
+      if (TraktAuth.isLoggedIn()) {
+          traktLoginText.textContent = "Disconnect Trakt";
+          traktLoginBtn.style.color = "#e50914";
+          
+          traktLoginBtn.addEventListener('click', () => {
+              if (confirm('Disconnect from Trakt.tv?')) {
+                  TraktAuth.logout();
+              }
+          });
+
+          // Sync logic
+          traktSyncBtn.addEventListener('click', () => {
+              TraktSync.fullSync();
+          });
+      } else {
+          traktLoginBtn.addEventListener('click', () => {
+              TraktAuth.login();
+          });
+          
+          traktSyncBtn.addEventListener('click', () => {
+              if(confirm("You need to login to Trakt.tv first. Login now?")) {
+                  TraktAuth.login();
+              }
+          });
+      }
+    </script>
 </body>
 
 </html>
