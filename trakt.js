@@ -169,8 +169,8 @@ const TraktAuth = {
         try {
             const res = await fetch(`${TRAKT_API_URL}${endpoint}`, options);
             if (!res.ok) throw new Error(`Trakt API error: ${res.status}`);
-            if (method !== 'POST') return await res.json();
-            return await res.text();
+            const text = await res.text();
+            try { return JSON.parse(text); } catch(e) { return text; }
         } catch (e) {
             console.error(e);
             return null;
@@ -445,7 +445,7 @@ const TraktSync = {
                 let changed = false;
                 const brokenWatchlist = localWatchlist.filter(w => !w.poster_path);
                 if (brokenWatchlist.length > 0) {
-                    await Promise.all(brokenWatchlist.map(async w => {
+                    for (const w of brokenWatchlist) {
                         try {
                             const wType = w.media_type || w.type || (w.title ? 'movie' : 'tv');
                             const meta = await fetchApi(`/${wType}/${w.id}?api_key=${TMDB_API_KEY}`);
@@ -455,7 +455,8 @@ const TraktSync = {
                                 w.media_type = wType; // Normalize field name
                             }
                         } catch(e){}
-                    }));
+                        await new Promise(r => setTimeout(r, 50)); // Prevent rate limit
+                    }
                     changed = true;
                     localStorage.setItem('watchlist', JSON.stringify(localWatchlist));
                 }
@@ -466,7 +467,7 @@ const TraktSync = {
                 });
                 
                 if (newItems.length > 0) {
-                    await Promise.all(newItems.map(async item => {
+                    for (const item of newItems) {
                         let id, type, title, release_date;
                         if (item.type === 'movie') { id = item.movie.ids.tmdb; type = 'movie'; title = item.movie.title; }
                         else if (item.type === 'show') { id = item.show.ids.tmdb; type = 'tv'; title = item.show.title; }
@@ -490,7 +491,8 @@ const TraktSync = {
                             release_date: release_date,
                             timestamp: new Date(item.listed_at).getTime() 
                         });
-                    }));
+                        await new Promise(r => setTimeout(r, 50)); // Prevent rate limit
+                    }
                     localStorage.setItem('watchlist', JSON.stringify(localWatchlist));
                 }
             }
@@ -501,7 +503,7 @@ const TraktSync = {
                 let cw = [];
                 try { cw = JSON.parse(localStorage.getItem('continue_watching')) || []; } catch(e){}
 
-                await Promise.all(playback.map(async item => {
+                for (const item of playback) {
                     let id, type, title;
                     if (item.type === 'movie' && item.movie && item.movie.ids && item.movie.ids.tmdb) {
                         id = item.movie.ids.tmdb; type = 'movie'; title = item.movie.title;
@@ -534,6 +536,7 @@ const TraktSync = {
                                         progData.title = meta.title || meta.name || title;
                                     }
                                 } catch(e){}
+                                await new Promise(r => setTimeout(r, 50)); // Prevent rate limit
                             }
                             // Ensure poster field always exists for renderContinueWatching
                             if (!progData.poster && progData.poster_path) {
@@ -544,7 +547,7 @@ const TraktSync = {
                             cw.unshift(parseInt(id));
                         }
                     }
-                }));
+                }
                 localStorage.setItem('continue_watching', JSON.stringify(cw));
             }
 
