@@ -27,7 +27,10 @@ async function generateCodeChallenge(codeVerifier) {
 
 const TraktAuth = {
     getRedirectUri() {
-        return window.location.origin + window.location.pathname;
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            return window.location.origin + window.location.pathname;
+        }
+        return 'https://gametec-hotshot.github.io/movie/';
     },
 
     async login() {
