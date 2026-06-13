@@ -81,6 +81,11 @@
       /* iOS FIX: Must be set on BOTH html AND body for overscroll-behavior
          to fully suppress pull-to-refresh and swipe-back on iOS Safari/Chrome */
       overscroll-behavior: none;
+      /* iOS CENTERING FIX: scrollbar-gutter:stable permanently reserves the
+         scrollbar lane in the layout. This means toggling overflow:hidden on
+         the body does NOT cause any layout shift (the classic "content jumps
+         right" bug on iOS when a modal opens). */
+      scrollbar-gutter: stable;
     }
 
     * {
@@ -4304,6 +4309,50 @@
     });
 
     const isTouchDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+
+    // iOS CENTERING FIX: Helpers that prevent the "content shifts right" bug.
+    // On desktop/Android: when overflow:hidden removes the scrollbar, we add
+    // padding-right equal to the scrollbar width so layout doesn't shift.
+    // On iOS: there is no real scrollbar, so we skip compensation entirely.
+    // Using a CSS class + padding-right approach is more reliable than
+    // setting body.style.overflow directly, because iOS sometimes recalculates
+    // viewport width when overflow changes, causing a phantom right-shift.
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    function lockScroll() {
+      if (isIOS) {
+        // On iOS: just fix the body in place using position:fixed trick
+        // (overflow:hidden alone doesn't prevent iOS bounce/scroll)
+        const scrollY = window.scrollY;
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${scrollY}px`;
+        document.body.style.width = '100%';
+        document.body.dataset.scrollY = scrollY;
+      } else {
+        // On desktop/Android: compensate for scrollbar disappearing
+        const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+        document.body.style.overflow = 'hidden';
+        if (scrollbarWidth > 0) {
+          document.body.style.paddingRight = `${scrollbarWidth}px`;
+        }
+      }
+    }
+
+    function unlockScroll() {
+      if (isIOS) {
+        const scrollY = parseFloat(document.body.dataset.scrollY || '0');
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        window.scrollTo(0, scrollY);
+      } else {
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+      }
+    }
+
+
     let scrollTicking = false;
     window.addEventListener('scroll', () => {
       if (!scrollTicking) {
@@ -6342,7 +6391,7 @@
       }
 
       playerModal.classList.add('active');
-      document.body.style.overflow = 'hidden';
+      lockScroll();
 
       // Explicitly hide the global back button during video playback
       globalBackBtn.classList.remove('active');
@@ -6552,7 +6601,7 @@
 
     function showLegal(type) {
       legalModal.classList.add('active');
-      document.body.style.overflow = 'hidden';
+      lockScroll();
 
       if (type === 'tos') {
         legalContent.innerHTML = `
@@ -6580,13 +6629,13 @@
 
     closeLegal.onclick = () => {
       legalModal.classList.remove('active');
-      document.body.style.overflow = 'auto';
+      unlockScroll();
     };
 
     function closePlayerModal(isHardwareBack = false) {
       if (!playerModal.classList.contains('active')) return;
       playerModal.classList.remove('active');
-      document.body.style.overflow = 'auto';
+      unlockScroll();
       playerIframe.src = "";
       playerIframe.removeAttribute('sandbox'); // Reset sandbox from sports mode
 
@@ -7004,7 +7053,7 @@
     // Open/Close Cache Settings
     openCacheSettingsBtn.addEventListener('click', () => {
       settingsDropdown.classList.remove('active');
-      document.body.style.overflow = 'hidden';
+      lockScroll();
       cacheSettingsView.classList.remove('hidden');
       cacheSettingsView.classList.add('active');
       renderCacheSettings();
@@ -7037,12 +7086,12 @@
     openAppInfoBtn.addEventListener('click', () => {
       settingsDropdown.classList.remove('active');
       appInfoModal.classList.add('active');
-      document.body.style.overflow = 'hidden';
+      lockScroll();
     });
 
     closeAppInfo.addEventListener('click', () => {
       appInfoModal.classList.remove('active');
-      document.body.style.overflow = 'auto';
+      unlockScroll();
     });
 
     const jokeModal = document.getElementById('joke-modal');
@@ -7055,11 +7104,11 @@
 
     closeJokeModal.addEventListener('click', () => {
       jokeModal.classList.remove('active');
-      document.body.style.overflow = 'auto';
+      unlockScroll();
     });
 
     closeCacheSettingsBtn.addEventListener('click', () => {
-      document.body.style.overflow = '';
+      unlockScroll();
       cacheSettingsView.classList.remove('active');
       setTimeout(() => cacheSettingsView.classList.add('hidden'), 400);
       // Re-render main view if needed
