@@ -1326,7 +1326,6 @@
       padding-bottom: 15px;
       scrollbar-width: thin;
       scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-      -webkit-overflow-scrolling: touch;
     }
 
     .cast-scroll::-webkit-scrollbar {
@@ -5618,7 +5617,7 @@
           <div style="margin-top: 30px; position: relative;">
             <h3 class="section-title">More Like This</h3>
             <button class="scroll-btn scroll-left" onclick="document.getElementById('similar-scroll').scrollBy({ left: -window.innerWidth * 0.8, behavior: 'smooth' })" style="opacity: 1; left: -25px;">&#10094;</button>
-            <div id="similar-scroll" style="display: flex; gap: 15px; overflow-x: auto; overflow-y: hidden; padding: 30px 10px; margin: -20px -10px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) transparent; scroll-snap-type: x mandatory; scroll-behavior: smooth;">
+            <div id="similar-scroll" style="display: flex; gap: 15px; overflow-x: auto; overflow-y: hidden; padding: 30px 10px; margin: -20px -10px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) transparent;">
               ${similarItems}
               ${viewAllCard}
             </div>
@@ -5713,31 +5712,45 @@
                   if (window._currentScrollFadeHandler) {
                     window.removeEventListener('scroll', window._currentScrollFadeHandler);
                   }
+                  let fadeTicking = false;
                   window._currentScrollFadeHandler = () => {
-                    if (!document.getElementById('bg-trailer')) {
-                      window.removeEventListener('scroll', window._currentScrollFadeHandler);
-                      return;
-                    }
-                    const scrollY = window.scrollY;
-                    const fadeStart = 50;
-                    const fadeEnd = 400;
-                    if (scrollY < fadeStart) {
-                      videoElement.style.opacity = 1;
-                      if (videoElement.paused && window.isAutoplayEnabled && !playerModal.classList.contains('active')) {
-                        videoElement.play().catch(e => console.warn('Autoplay prevented:', e));
-                      }
-                    } else if (scrollY > fadeEnd) {
-                      videoElement.style.opacity = 0;
-                      if (!videoElement.paused) videoElement.pause();
-                    } else {
-                      const opacity = 1 - ((scrollY - fadeStart) / (fadeEnd - fadeStart));
-                      videoElement.style.opacity = Math.max(0, opacity);
-                      if (videoElement.paused && window.isAutoplayEnabled && !playerModal.classList.contains('active')) {
-                        videoElement.play().catch(e => console.warn('Autoplay prevented:', e));
-                      }
+                    // Disable scroll fade entirely on touch devices to prevent GPU crashes
+                    if (isTouchDevice) return;
+                    
+                    if (!fadeTicking) {
+                      window.requestAnimationFrame(() => {
+                        if (!document.getElementById('bg-trailer')) {
+                          window.removeEventListener('scroll', window._currentScrollFadeHandler);
+                          fadeTicking = false;
+                          return;
+                        }
+                        const scrollY = window.scrollY;
+                        const fadeStart = 50;
+                        const fadeEnd = 400;
+                        
+                        if (scrollY > fadeEnd) {
+                          videoElement.style.opacity = 0;
+                          if (!videoElement.paused) {
+                            videoElement.pause();
+                            videoElement.playAttempted = false;
+                          }
+                        } else {
+                          const opacity = scrollY < fadeStart ? 1 : 1 - ((scrollY - fadeStart) / (fadeEnd - fadeStart));
+                          videoElement.style.opacity = Math.max(0, opacity);
+                          if (videoElement.paused && window.isAutoplayEnabled && !playerModal.classList.contains('active') && !videoElement.playAttempted) {
+                            videoElement.playAttempted = true;
+                            videoElement.play().catch(e => {
+                              console.warn('Autoplay prevented:', e);
+                              window.isAutoplayEnabled = false;
+                            });
+                          }
+                        }
+                        fadeTicking = false;
+                      });
+                      fadeTicking = true;
                     }
                   };
-                  window.addEventListener('scroll', window._currentScrollFadeHandler);
+                  window.addEventListener('scroll', window._currentScrollFadeHandler, { passive: true });
                 }
               }
             }
