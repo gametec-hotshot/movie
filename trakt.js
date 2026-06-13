@@ -361,7 +361,7 @@ const TraktSync = {
         if (localWatchlist.length > 0) {
             const watchlistPayload = { movies: [], shows: [] };
             localWatchlist.forEach(item => {
-                let type = item.type || item.mediaType || (item.title ? 'movie' : 'tv');
+                let type = item.media_type || item.type || item.mediaType || (item.title ? 'movie' : 'tv');
                 if (type === 'movie') watchlistPayload.movies.push({ ids: { tmdb: parseInt(item.id) } });
                 else watchlistPayload.shows.push({ ids: { tmdb: parseInt(item.id) } });
             });
@@ -447,14 +447,17 @@ const TraktSync = {
                 if (brokenWatchlist.length > 0) {
                     await Promise.all(brokenWatchlist.map(async w => {
                         try {
-                            const meta = await fetchApi(`/${w.type}/${w.id}?api_key=${TMDB_API_KEY}`);
+                            const wType = w.media_type || w.type || (w.title ? 'movie' : 'tv');
+                            const meta = await fetchApi(`/${wType}/${w.id}?api_key=${TMDB_API_KEY}`);
                             if (meta) { 
                                 w.poster_path = meta.poster_path; 
-                                w.id = parseInt(w.id); 
+                                w.id = parseInt(w.id);
+                                w.media_type = wType; // Normalize field name
                             }
                         } catch(e){}
                     }));
                     changed = true;
+                    localStorage.setItem('watchlist', JSON.stringify(localWatchlist));
                 }
 
                 const newItems = traktWatchlist.filter(item => {
@@ -480,7 +483,7 @@ const TraktSync = {
                         
                         localWatchlist.push({ 
                             id: parseInt(id), // Integer to fix the === bug in UI
-                            type: type, 
+                            media_type: type, // Must match toggleWatchlist format in index.html
                             title: type === 'movie' ? title : undefined,
                             name: type === 'tv' ? title : undefined,
                             poster_path: poster_path,
@@ -526,9 +529,15 @@ const TraktSync = {
                                     const meta = await fetchApi(`/${type}/${id}?api_key=${TMDB_API_KEY}`);
                                     if (meta) {
                                         progData.poster_path = meta.poster_path;
+                                        // Store full poster URL too — renderContinueWatching uses item.poster
+                                        progData.poster = meta.poster_path ? `https://image.tmdb.org/t/p/w500${meta.poster_path}` : '';
                                         progData.title = meta.title || meta.name || title;
                                     }
                                 } catch(e){}
+                            }
+                            // Ensure poster field always exists for renderContinueWatching
+                            if (!progData.poster && progData.poster_path) {
+                                progData.poster = `https://image.tmdb.org/t/p/w500${progData.poster_path}`;
                             }
                             localStorage.setItem(key, JSON.stringify(progData));
                             cw = cw.filter(c_id => parseInt(c_id) !== parseInt(id));
