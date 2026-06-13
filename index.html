@@ -4031,6 +4031,10 @@
         if (!window._lastProgressSave || now - window._lastProgressSave > 5000) {
           localStorage.setItem(`progress_${meta.id}`, JSON.stringify(progressData));
           window._lastProgressSave = now;
+            if (typeof TraktSync !== 'undefined' && (!window._lastTraktScrobble || now - window._lastTraktScrobble > 30000)) {
+              TraktSync.scrobbleProgress(meta.id, meta.mediaType || meta.type, meta.currentSeason || meta.season, meta.currentEpisode || meta.episode, progressData.progress);
+              window._lastTraktScrobble = now;
+            }
         }
 
         // Dynamic timing: trigger next prompt near end credits
@@ -4071,6 +4075,10 @@
           if (!window._lastProgressSave || now - window._lastProgressSave > 5000) {
             localStorage.setItem(`progress_${meta.id}`, JSON.stringify(progressData));
             window._lastProgressSave = now;
+            if (typeof TraktSync !== 'undefined' && (!window._lastTraktScrobble || now - window._lastTraktScrobble > 30000)) {
+              TraktSync.scrobbleProgress(meta.id, meta.mediaType || meta.type, meta.currentSeason || meta.season, meta.currentEpisode || meta.episode, progressData.progress);
+              window._lastTraktScrobble = now;
+            }
           }
 
           if (!window.nextPromptShown && duration > 0) {
@@ -4124,6 +4132,10 @@
           if (!window._lastProgressSave || now - window._lastProgressSave > 5000) {
             localStorage.setItem(`progress_${meta.id}`, JSON.stringify(progressData));
             window._lastProgressSave = now;
+            if (typeof TraktSync !== 'undefined' && (!window._lastTraktScrobble || now - window._lastTraktScrobble > 30000)) {
+              TraktSync.scrobbleProgress(meta.id, meta.mediaType || meta.type, meta.currentSeason || meta.season, meta.currentEpisode || meta.episode, progressData.progress);
+              window._lastTraktScrobble = now;
+            }
           }
 
           if (!window.nextPromptShown && duration > 0) {
@@ -4162,6 +4174,10 @@
           if (!window._lastProgressSave || now - window._lastProgressSave > 5000) {
             localStorage.setItem(`progress_${meta.id}`, JSON.stringify(progressData));
             window._lastProgressSave = now;
+            if (typeof TraktSync !== 'undefined' && (!window._lastTraktScrobble || now - window._lastTraktScrobble > 30000)) {
+              TraktSync.scrobbleProgress(meta.id, meta.mediaType || meta.type, meta.currentSeason || meta.season, meta.currentEpisode || meta.episode, progressData.progress);
+              window._lastTraktScrobble = now;
+            }
           }
 
           if (!window.nextPromptShown && duration > 0) {
@@ -4841,10 +4857,11 @@
     function toggleWatchlist(item) {
       let list = getWatchlist();
       const idx = list.findIndex(i => i.id === item.id);
+      const type = item.title ? 'movie' : 'tv';
       if (idx > -1) {
         list.splice(idx, 1);
+        if (typeof TraktSync !== 'undefined') TraktSync.removeFromWatchlist(item.id, type);
       } else {
-        const type = item.title ? 'movie' : 'tv';
         list.push({
           id: item.id,
           media_type: type,
@@ -4853,6 +4870,7 @@
           vote_average: item.vote_average,
           release_date: item.release_date || item.first_air_date
         });
+        if (typeof TraktSync !== 'undefined') TraktSync.addToWatchlist(item.id, type);
       }
       localStorage.setItem('watchlist', JSON.stringify(list));
       renderWatchlistRow();
@@ -4974,7 +4992,7 @@
         if (isContinueWatching && item.progressValue) {
           const prog = document.createElement('div');
           prog.className = 'card-progress';
-          prog.innerHTML = `<div class="card-progress-bar" style="width: ${item.progressValue * 100}%"></div>`;
+          prog.innerHTML = `<div class="card-progress-bar" style="width: ${item.progressValue}%"></div>`;
           card.appendChild(prog);
         }
         posters.appendChild(card);
@@ -6684,6 +6702,16 @@
         const poster = itemMeta && itemMeta.poster_path ? `${IMG_URL}${itemMeta.poster_path}` : "";
         const durationSeconds = runtimeMinutes * 60;
 
+        // Re-inject estimated currentTime if imported from Trakt
+        try {
+            const tempSaved = JSON.parse(localStorage.getItem(`progress_${id}`));
+            if (tempSaved && tempSaved.progress && (!tempSaved.currentTime || tempSaved.isEstimated)) {
+                tempSaved.currentTime = (tempSaved.progress / 100) * durationSeconds;
+                tempSaved.duration = durationSeconds;
+                localStorage.setItem(`progress_${id}`, JSON.stringify(tempSaved));
+            }
+        } catch(e) {}
+
         // 1. Instant "Ping" registration at 0s
         let cw = getContinueWatching();
         cw = cw.filter(c_id => String(c_id) !== String(id));
@@ -7081,6 +7109,10 @@
             if (!window._lastProgressSave || now - window._lastProgressSave > 5000) {
               localStorage.setItem(`progress_${tmdbId}`, JSON.stringify(savedObj));
               window._lastProgressSave = now;
+            if (typeof TraktSync !== 'undefined' && (!window._lastTraktScrobble || now - window._lastTraktScrobble > 30000)) {
+              TraktSync.scrobbleProgress(meta.id, meta.mediaType || meta.type, meta.currentSeason || meta.season, meta.currentEpisode || meta.episode, progressData.progress);
+              window._lastTraktScrobble = now;
+            }
             }
           }
 

@@ -202,6 +202,52 @@ const TraktSync = {
         }
     },
 
+    async addToWatchlist(tmdbId, type) {
+        if (!TraktAuth.isLoggedIn()) return;
+        const payload = { movies: [], shows: [] };
+        if (type === 'movie') payload.movies.push({ ids: { tmdb: parseInt(tmdbId) } });
+        else payload.shows.push({ ids: { tmdb: parseInt(tmdbId) } });
+
+        const res = await TraktAuth.apiCall('/sync/watchlist', 'POST', payload);
+        if (res && res.added) {
+            this.showToast('✅ Added to Trakt Watchlist');
+        }
+    },
+
+    async removeFromWatchlist(tmdbId, type) {
+        if (!TraktAuth.isLoggedIn()) return;
+        const payload = { movies: [], shows: [] };
+        if (type === 'movie') payload.movies.push({ ids: { tmdb: parseInt(tmdbId) } });
+        else payload.shows.push({ ids: { tmdb: parseInt(tmdbId) } });
+
+        const res = await TraktAuth.apiCall('/sync/watchlist/remove', 'POST', payload);
+        if (res && res.deleted) {
+            this.showToast('❌ Removed from Trakt Watchlist');
+        }
+    },
+
+    async scrobbleProgress(tmdbId, type, season = null, episode = null, progressPercentage) {
+        if (!TraktAuth.isLoggedIn() || progressPercentage <= 0) return;
+        
+        let payload = {
+            progress: parseFloat(progressPercentage.toFixed(2)),
+            app_version: "2.2",
+            app_date: "2026-06-13"
+        };
+
+        if (type === 'movie') {
+            payload.movie = { ids: { tmdb: parseInt(tmdbId) } };
+        } else if (type === 'tv' && season !== null && episode !== null) {
+            payload.show = { ids: { tmdb: parseInt(tmdbId) } };
+            payload.episode = { season: parseInt(season), number: parseInt(episode) };
+        } else {
+            return;
+        }
+
+        // We use /scrobble/pause to record progress without completing
+        await TraktAuth.apiCall('/scrobble/pause', 'POST', payload);
+    },
+
     showToast(message) {
         let toast = document.getElementById('trakt-toast');
         if (!toast) {
@@ -288,15 +334,24 @@ const TraktSync = {
 
         if (count === 0) {
             if (!silent) alert('No completed movies or episodes found locally to export.');
-            return;
+        } else {
+            if (!silent) alert(`Exporting ${count} items to Trakt. This might take a moment...`);
+            const result = await TraktAuth.apiCall('/sync/history', 'POST', payload);
+            if (result && result.added && !silent) {
+                alert(`Successfully exported to Trakt! Added ${result.added.movies} movies and ${result.added.episodes} episodes.`);
+            }
         }
 
-        if (!silent) alert(`Exporting ${count} items to Trakt. This might take a moment...`);
-        const result = await TraktAuth.apiCall('/sync/history', 'POST', payload);
-        if (result && result.added && !silent) {
-            alert(`Successfully exported to Trakt! Added ${result.added.movies} movies and ${result.added.episodes} episodes.`);
-        } else if (!silent) {
-            alert('Export might have failed or items were already on Trakt.');
+        // Export Watchlist
+        let localWatchlist = [];
+        try { localWatchlist = JSON.parse(localStorage.getItem('watchlist')) || []; } catch(e){}
+        if (localWatchlist.length > 0) {
+            const watchlistPayload = { movies: [], shows: [] };
+            localWatchlist.forEach(item => {
+                if (item.type === 'movie') watchlistPayload.movies.push({ ids: { tmdb: parseInt(item.id) } });
+                else watchlistPayload.shows.push({ ids: { tmdb: parseInt(item.id) } });
+            });
+            await TraktAuth.apiCall('/sync/watchlist', 'POST', watchlistPayload);
         }
     },
 
@@ -366,6 +421,66 @@ const TraktSync = {
                     }
                 });
             }
+
+            // Import Watchlist
+            const traktWatchlist = await TraktAuth.apiCall('/sync/watchlist');
+            if (traktWatchlist && Array.isArray(traktWatchlist)) {
+                let localWatchlist = [];
+                try { localWatchlist = JSON.parse(localStorage.getItem('watchlist')) || []; } catch(e){}
+                
+                traktWatchlist.forEach(item => {
+                    let id, type, title, poster_path;
+                    if (item.type === 'movie' && item.movie && item.movie.ids && item.movie.ids.tmdb) {
+                        id = item.movie.ids.tmdb; type = 'movie'; title = item.movie.title;
+                    } else if (item.type === 'show' && item.show && item.show.ids && item.show.ids.tmdb) {
+                        id = item.show.ids.tmdb; type = 'tv'; title = item.show.title;
+                    }
+                    if (id && !localWatchlist.find(w => w.id == id)) {
+                        localWatchlist.push({ id: id.toString(), type, title, timestamp: new Date(item.listed_at).getTime() });
+                    }
+                });
+                localStorage.setItem('watchlist', JSON.stringify(localWatchlist));
+            }
+
+            // Import Playback Progress
+            const playback = await TraktAuth.apiCall('/sync/playback');
+            if (playback && Array.isArray(playback)) {
+                let cw = [];
+                try { cw = JSON.parse(localStorage.getItem('continue_watching')) || []; } catch(e){}
+
+                playback.forEach(item => {
+                    let id, type, title;
+                    if (item.type === 'movie' && item.movie && item.movie.ids && item.movie.ids.tmdb) {
+                        id = item.movie.ids.tmdb; type = 'movie'; title = item.movie.title;
+                    } else if (item.type === 'episode' && item.show && item.show.ids && item.show.ids.tmdb) {
+                        id = item.show.ids.tmdb; type = 'tv'; title = item.show.title;
+                    }
+
+                    if (id) {
+                        const key = `progress_${id}`;
+                        let progData = { progress: item.progress, id: id, type: type, mediaType: type, title: title, isEstimated: true, updatedAt: new Date(item.paused_at).getTime() };
+                        try { 
+                            const existing = JSON.parse(localStorage.getItem(key)); 
+                            if (existing && existing.updatedAt && existing.updatedAt > progData.updatedAt) {
+                                // Local is newer, don't overwrite
+                                progData = null;
+                            } else if (existing) {
+                                // Preserve local duration data if possible
+                                progData = { ...existing, progress: item.progress, updatedAt: progData.updatedAt, isEstimated: true };
+                            }
+                        } catch(e) {}
+                        
+                        if (progData) {
+                            localStorage.setItem(key, JSON.stringify(progData));
+                            cw = cw.filter(c_id => String(c_id) !== String(id));
+                            cw.unshift(id.toString());
+                        }
+                    }
+                });
+                if (cw.length > 20) cw = cw.slice(0, 20);
+                localStorage.setItem('continue_watching', JSON.stringify(cw));
+            }
+
             console.log("Trakt import complete");
             return true;
         } catch (e) {
