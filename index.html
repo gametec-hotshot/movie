@@ -6912,6 +6912,12 @@
         }
       });
       renderContinueWatching();
+      
+      // Move it back to the top of the page so it doesn't appear at the bottom
+      const newCwRow = document.querySelector('.row[data-row-type="Continue Watching"]');
+      if (newCwRow && rowsContainer.firstChild) {
+         rowsContainer.insertBefore(newCwRow, rowsContainer.firstChild);
+      }
     }
 
     window.addEventListener("message", (event) => {
@@ -7150,7 +7156,7 @@
               localStorage.setItem(`progress_${tmdbId}`, JSON.stringify(savedObj));
               window._lastProgressSave = now;
               if (typeof TraktSync !== 'undefined' && (!window._lastTraktScrobble || now - window._lastTraktScrobble > 30000)) {
-                TraktSync.scrobbleProgress(meta.id, meta.mediaType || meta.type, meta.currentSeason || meta.season, meta.currentEpisode || meta.episode, progressData.progress);
+                TraktSync.scrobbleProgress(meta.id, meta.mediaType || meta.type, meta.currentSeason || meta.season, meta.currentEpisode || meta.episode, progressPercent * 100);
                 window._lastTraktScrobble = now;
               }
             }
