@@ -181,6 +181,7 @@ const TraktAuth = {
 const TraktSync = {
     async markWatched(tmdbId, type, season = null, episode = null) {
         if (!TraktAuth.isLoggedIn()) return;
+        if (type === 'anime') type = 'tv'; // Trakt treats anime as TV shows
 
         const payload = { movies: [], episodes: [] };
         
@@ -204,6 +205,7 @@ const TraktSync = {
 
     async addToWatchlist(tmdbId, type) {
         if (!TraktAuth.isLoggedIn()) return;
+        if (type === 'anime') type = 'tv'; // Trakt treats anime as TV shows
         const payload = { movies: [], shows: [] };
         if (type === 'movie') payload.movies.push({ ids: { tmdb: parseInt(tmdbId) } });
         else payload.shows.push({ ids: { tmdb: parseInt(tmdbId) } });
@@ -216,6 +218,7 @@ const TraktSync = {
 
     async removeFromWatchlist(tmdbId, type) {
         if (!TraktAuth.isLoggedIn()) return;
+        if (type === 'anime') type = 'tv'; // Trakt treats anime as TV shows
         const payload = { movies: [], shows: [] };
         if (type === 'movie') payload.movies.push({ ids: { tmdb: parseInt(tmdbId) } });
         else payload.shows.push({ ids: { tmdb: parseInt(tmdbId) } });
@@ -228,6 +231,7 @@ const TraktSync = {
 
     async scrobbleProgress(tmdbId, type, season = null, episode = null, progressPercentage) {
         if (!TraktAuth.isLoggedIn() || progressPercentage <= 0) return;
+        if (type === 'anime') type = 'tv'; // Trakt treats anime as TV shows
         
         let payload = {
             progress: parseFloat(progressPercentage.toFixed(2)),
@@ -301,6 +305,7 @@ const TraktSync = {
                         // Deduce from watchlist if possible, otherwise assume movie if no season/ep data
                         mediaType = 'movie';
                     }
+                    if (mediaType === 'anime') mediaType = 'tv'; // Normalize for Trakt
                     if (mediaType === 'movie') {
                         if (data.progress >= 90) {
                             payload.movies.push({
@@ -309,10 +314,15 @@ const TraktSync = {
                             });
                             count++;
                         } else if (data.progress > 0) {
-                            // Partially watched movie -> Push to Trakt via Scrobble
-                            // (We do this asynchronously so we don't block the main thread too long, 
-                            // Trakt allows decent rate limits for initial syncs)
                             TraktSync.scrobbleProgress(data.id, 'movie', null, null, data.progress).catch(e => console.log('Scrobble export failed', e));
+                            count++;
+                        }
+                    } else if (mediaType === 'tv' && data.progress > 0) {
+                        // TV/anime partially watched — scrobble progress to Trakt
+                        const s = data.currentSeason || data.season || null;
+                        const e = data.currentEpisode || data.episode || null;
+                        if (s && e) {
+                            TraktSync.scrobbleProgress(data.id, 'tv', s, e, data.progress).catch(err => console.log('Scrobble export failed', err));
                             count++;
                         }
                     }
