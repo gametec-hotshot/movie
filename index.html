@@ -6449,13 +6449,18 @@
       reader.onload = (ev) => {
         try {
           const imported = JSON.parse(ev.target.result);
-          if (imported._prisma_export_version !== 1 || !imported.data) {
-            alert('Invalid Prisma backup file.');
+          
+          // Support both legacy backups (raw key-value map) and new v1 format
+          const dataToImport = imported._prisma_export_version ? imported.data : imported;
+
+          if (!dataToImport || typeof dataToImport !== 'object') {
+            alert('Invalid Prisma backup file format.');
             return;
           }
           
-          Object.keys(imported.data).forEach(key => {
-            localStorage.setItem(key, imported.data[key]);
+          Object.keys(dataToImport).forEach(key => {
+            if (key === '_prisma_export_version' || key === 'timestamp') return;
+            localStorage.setItem(key, dataToImport[key]);
           });
           
           alert('Backup imported successfully!');
