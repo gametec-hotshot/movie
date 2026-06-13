@@ -2743,7 +2743,7 @@
     <div class="modal-content-wrapper">
       <button class="close-btn" id="close-modal">&times;</button>
       <div class="player-container">
-        <iframe id="player-iframe" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; storage-access"
+        <iframe id="player-iframe" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay *; fullscreen *; picture-in-picture *; storage-access *"
           referrerpolicy="origin"></iframe>
         <div id="next-prompt-container"></div>
       </div>
@@ -3070,6 +3070,7 @@
       { id: 'vidplus', name: 'Vidplus', url: 'https://player.vidplus.to', adFree: false, sandbox: false, label: 'Server 22' },
       { id: 'fmovies', name: 'FMovies', url: 'https://www.fmovies.gd', adFree: false, sandbox: false, label: 'Server 23' },
       { id: 'vidlux', name: 'Vidlux', url: 'https://vidlux.xyz', adFree: false, sandbox: false, label: 'Server 24', hasDownload: true },
+      { id: 'vegamovies', name: 'VegaMovies', url: 'https://vegamovies.mq', adFree: false, sandbox: false, label: 'Server 28', hasDownload: true },
 
       // Alpha Testing Server
       { id: 'server-27', name: 'Server 27 (Alpha)', url: null, adFree: true, sandbox: false, label: 'Server 27', isAlpha: true, autoCheck: true }
@@ -3144,14 +3145,14 @@
 
     function openDownloadModal(id, type, season, episode) {
       let downloadServers = SERVERS.filter(s => s.hasDownload);
-      // Sort servers: vidlux first, rivestream second, others later
-      const order = { 'vidlux': 1, 'rivestream': 2 };
+      // Sort servers: vegamovies first, vidlux second, rivestream third
+      const order = { 'vegamovies': 1, 'vidlux': 2, 'rivestream': 3 };
       downloadServers.sort((a, b) => (order[a.id] || 99) - (order[b.id] || 99));
 
       downloadSelectionBody.innerHTML = '';
       
       downloadServers.forEach(srv => {
-        const isRecommended = srv.id === 'rivestream' || srv.id === 'vidlux';
+        const isRecommended = srv.id === 'rivestream' || srv.id === 'vidlux' || srv.id === 'vegamovies';
         let downloadUrl = '';
         if (srv.id === '1embed') {
           downloadUrl = type === 'movie' ? `https://1embed.cc/download/movie/${id}` : `https://1embed.cc/download/tv/${id}/${season}/${episode}`;
@@ -3159,12 +3160,20 @@
           downloadUrl = type === 'movie' ? `https://www.rivestream.app/download?type=movie&id=${id}` : `https://www.rivestream.app/download?type=tv&id=${id}&season=${season}&episode=${episode}`;
         } else if (srv.id === 'vidlux') {
           downloadUrl = type === 'movie' ? `https://02moviedownloader.site/api/download/movie/${id}` : `https://02moviedownloader.site/api/download/tv/${id}/${season}/${episode}`;
+        } else if (srv.id === 'vegamovies') {
+          const tmdbTitle = currentDetailsData ? (currentDetailsData.title || currentDetailsData.name || '') : '';
+          downloadUrl = `https://vegamovies.mq/search.html?q=${encodeURIComponent(tmdbTitle)}`;
         }
         
         let recBadge = isRecommended ? `<span style="font-size: 0.65rem; font-weight: 800; color: #46d369; padding: 3px 6px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; text-transform: uppercase;">Recommended</span>` : '';
         
+        const fastDlBadge = `<span style="font-size: 0.65rem; font-weight: 800; color: #00d4ff; padding: 3px 6px; background: rgba(0,0,0,0.4); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 3px;"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Fast Download</span>`;
+        const fourKBadge = `<span style="font-size: 0.65rem; font-weight: 800; color: #f59e0b; padding: 3px 6px; background: rgba(0,0,0,0.4); border: 1px solid rgba(245,158,11,0.3); border-radius: 6px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 3px;"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="10" rx="2" ry="2"></rect><polyline points="7 10 7 14"></polyline><polyline points="10 10 7 12"></polyline><line x1="14" y1="10" x2="14" y2="14"></line><polyline points="17 10 14 12 17 14"></polyline></svg> 4K Option</span>`;
+
         if (srv.id === 'vidlux') {
-            recBadge += `<span style="font-size: 0.65rem; font-weight: 800; color: #00d4ff; padding: 3px 6px; background: rgba(0,0,0,0.4); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; text-transform: uppercase; margin-left: 8px; display: inline-flex; align-items: center; gap: 3px;"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Fast Download</span>`;
+            recBadge += fastDlBadge;
+        } else if (srv.id === 'vegamovies') {
+            recBadge += fastDlBadge + fourKBadge;
         }
 
         const dlIcon = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="margin-right: 5px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`;
@@ -3174,11 +3183,11 @@
         btn.id = `download-btn-${srv.id}`;
         btn.style.cssText = 'background: rgba(255, 255, 255, 0.05); color: #fff; border: 1px solid rgba(255, 255, 255, 0.15); display: flex; flex-direction: column; gap: 8px; padding: 14px 20px; border-radius: 12px !important; min-height: 60px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; text-align: left;';
         btn.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
-            <div style="display: flex; align-items: center; font-size: 1.1rem; font-weight: bold;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; font-size: 1.1rem; font-weight: bold; flex-shrink: 0;">
               ${dlIcon} ${srv.name}
             </div>
-            <div style="display: flex; align-items: center;">
+            <div style="display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 6px;">
               ${recBadge}
             </div>
           </div>
@@ -5771,12 +5780,12 @@
     }
 
     closeModal.addEventListener('click', () => {
-      // Remove the playerOpen flag from state in-place (no history.back() needed)
-      const currentState = history.state || {};
-      const { playerOpen, ...stateWithoutPlayer } = currentState;
-      const cleanHash = (window.location.hash || '').replace('-player', '') || '#home';
-      history.replaceState(stateWithoutPlayer, '', cleanHash);
-      closePlayerModal();
+      // Cleanly pop the player state to prevent history trapping on mobile
+      if (history.state && history.state.playerOpen) {
+        history.back();
+      } else {
+        closePlayerModal();
+      }
     });
 
     function updateContinueWatchingUI() {
