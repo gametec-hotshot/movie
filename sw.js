@@ -1,24 +1,31 @@
 /**
- * Prisma Service Worker
- * - Caches the app shell (index.html, logo.png, manifest.json) on install.
- * - Serves shell from cache for instant loads.
- * - NEVER caches API calls (TMDb, streaming servers) — those must always be fresh.
+ * Prisma Service Worker v2.1
+ *
+ * Strategy:
+ * - NAVIGATE requests (page loads): Network-First → fallback to cache.
+ *   This is critical for iOS Safari/Chrome: returning a stale cached
+ *   response for a navigate fetch after a SW controller change causes the
+ *   "can't open this page" error. Always try the network first for page loads.
+ *
+ * - Static assets (logo, manifest): Cache-First → fallback to network.
+ *   These never change at a given URL, so serving from cache is safe.
+ *
+ * - External resources (TMDb, fonts, streaming servers): Pass-through.
+ *   Never intercepted — must always come fresh from the network.
  */
 
-const CACHE_NAME = 'prisma-shell-v2.0';
+const CACHE_NAME = 'prisma-shell-v2.1';
 
-const APP_SHELL = [
-  './',
-  './index.html',
+const STATIC_ASSETS = [
   './logo.png',
   './manifest.json'
 ];
 
-// On install: cache the app shell
+// On install: pre-cache only static assets (NOT index.html — see strategy above)
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(APP_SHELL);
+      return cache.addAll(STATIC_ASSETS);
     }).then(() => self.skipWaiting())
   );
 });
@@ -36,44 +43,49 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// On fetch: Network-first for everything except external resources
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Never intercept: TMDb API, streaming servers, external resources
+  // Never intercept: external resources (TMDb, fonts, streaming servers, CDNs)
   const isExternal = (
-    url.hostname.includes('themoviedb.org') ||
-    url.hostname.includes('image.tmdb.org') ||
-    url.hostname.includes('fonts.googleapis.com') ||
-    url.hostname.includes('fonts.gstatic.com') ||
-    url.hostname.includes('youtube.com') ||
-    url.pathname.includes('advertisement.js') ||
-    !url.hostname.includes(self.location.hostname)
+    url.hostname !== self.location.hostname ||
+    url.pathname.includes('advertisement.js')
   );
 
   if (isExternal) return;
 
-  // Stale-While-Revalidate Strategy for App Shell
-  // Ensures instant loading from cache, while silently updating the cache in the background.
+  // ── STRATEGY 1: Network-First for navigation (page loads) ──────────────────
+  // iOS Safari & Chrome require a real HTTP response for navigate-mode fetches.
+  // Serving a cached page here after a SW update causes "can't open this page".
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        // Offline fallback: serve cached index.html if network is unavailable
+        return caches.match('./index.html');
+      })
+    );
+    return;
+  }
+
+  // ── STRATEGY 2: Cache-First for static assets ──────────────────────────────
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      const fetchPromise = fetch(event.request).then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+      if (cachedResponse) return cachedResponse;
+
+      // Not in cache — fetch from network and store for next time
+      return fetch(event.request).then((networkResponse) => {
+        if (
+          networkResponse &&
+          networkResponse.status === 200 &&
+          networkResponse.type === 'basic'
+        ) {
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseToCache);
           });
         }
         return networkResponse;
-      }).catch(() => {
-        // If network fails and we have no cache, fallback to offline shell
-        if (!cachedResponse && event.request.mode === 'navigate') {
-          return caches.match('./index.html');
-        }
       });
-
-      // Return cached response instantly if available, otherwise wait for network
-      return cachedResponse || fetchPromise;
     })
   );
 });

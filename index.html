@@ -14,7 +14,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" href="logo.png">
-  <meta name="version" content="2.0">
+  <meta name="version" content="2.1">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -77,6 +77,12 @@
       background: rgba(255, 255, 255, 0.2);
     }
 
+    html {
+      /* iOS FIX: Must be set on BOTH html AND body for overscroll-behavior
+         to fully suppress pull-to-refresh and swipe-back on iOS Safari/Chrome */
+      overscroll-behavior: none;
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -91,7 +97,11 @@
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      -webkit-overflow-scrolling: touch;
+      /* iOS FIX: overscroll-behavior prevents pull-to-refresh and swipe-back
+         navigation from firing during fast scrolling, which caused random
+         page reloads. Removed deprecated -webkit-overflow-scrolling:touch
+         which is the primary culprit for the iOS reload bug. */
+      overscroll-behavior-y: none;
     }
 
     h1, h2, h3, h4, h5, h6, .card-title, .ep-title, .hero-title, .section-title {
@@ -520,7 +530,11 @@
       scroll-snap-type: x mandatory;
       padding: 40px 10px;
       margin: -20px -10px;
-      -webkit-overflow-scrolling: touch;
+      /* iOS FIX: overscroll-behavior-x:contain stops horizontal scroll from
+         bubbling up to the page and triggering back/forward navigation.
+         touch-action:pan-x ensures only horizontal swipes are handled here. */
+      overscroll-behavior-x: contain;
+      touch-action: pan-x;
     }
 
     .row-posters::-webkit-scrollbar {
