@@ -182,20 +182,53 @@ const TraktSync = {
         const payload = { movies: [], episodes: [] };
         
         if (type === 'movie') {
-            payload.movies.push({ ids: { tmdb: tmdbId } });
+            payload.movies.push({ ids: { tmdb: parseInt(tmdbId) } });
         } else if (type === 'tv' && season !== null && episode !== null) {
-            // For Trakt, we can sync by TVDB or TMDB ID. Trakt prefers TVDB but TMDB works if structured properly.
-            // Actually, for episodes, Trakt needs the show ID (tmdb) and season/episode numbers.
             payload.shows = [{
-                ids: { tmdb: tmdbId },
+                ids: { tmdb: parseInt(tmdbId) },
                 seasons: [{
-                    number: season,
-                    episodes: [{ number: episode }]
+                    number: parseInt(season),
+                    episodes: [{ number: parseInt(episode) }]
                 }]
             }];
         }
 
-        await TraktAuth.apiCall('/sync/history', 'POST', payload);
+        const res = await TraktAuth.apiCall('/sync/history', 'POST', payload);
+        if (res && res.added) {
+            this.showToast('✅ Saved to Trakt.tv');
+        }
+    },
+
+    showToast(message) {
+        let toast = document.getElementById('trakt-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'trakt-toast';
+            toast.style.position = 'fixed';
+            toast.style.bottom = '20px';
+            toast.style.left = '50%';
+            toast.style.transform = 'translateX(-50%)';
+            toast.style.background = 'rgba(229, 9, 20, 0.9)';
+            toast.style.color = '#fff';
+            toast.style.padding = '10px 20px';
+            toast.style.borderRadius = '30px';
+            toast.style.fontFamily = 'sans-serif';
+            toast.style.fontSize = '14px';
+            toast.style.fontWeight = 'bold';
+            toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+            toast.style.zIndex = '9999';
+            toast.style.transition = 'opacity 0.3s ease';
+            document.body.appendChild(toast);
+        }
+        toast.textContent = message;
+        toast.style.opacity = '1';
+        toast.style.display = 'block';
+        
+        if (this.toastTimeout) clearTimeout(this.toastTimeout);
+        this.toastTimeout = setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.style.display = 'none', 300);
+        }, 3000);
     },
 
     async exportLocalToTrakt(silent = false) {
