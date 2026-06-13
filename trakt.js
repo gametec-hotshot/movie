@@ -441,19 +441,55 @@ const TraktSync = {
             if (traktWatchlist && Array.isArray(traktWatchlist)) {
                 let localWatchlist = [];
                 try { localWatchlist = JSON.parse(localStorage.getItem('watchlist')) || []; } catch(e){}
-                
-                traktWatchlist.forEach(item => {
-                    let id, type, title, poster_path;
-                    if (item.type === 'movie' && item.movie && item.movie.ids && item.movie.ids.tmdb) {
-                        id = item.movie.ids.tmdb; type = 'movie'; title = item.movie.title;
-                    } else if (item.type === 'show' && item.show && item.show.ids && item.show.ids.tmdb) {
-                        id = item.show.ids.tmdb; type = 'tv'; title = item.show.title;
-                    }
-                    if (id && !localWatchlist.find(w => w.id == id)) {
-                        localWatchlist.push({ id: id.toString(), type, title, timestamp: new Date(item.listed_at).getTime() });
-                    }
+                // Auto-repair existing items that are missing posters (fixes invisible items in UI)
+                let changed = false;
+                const brokenWatchlist = localWatchlist.filter(w => !w.poster_path);
+                if (brokenWatchlist.length > 0) {
+                    await Promise.all(brokenWatchlist.map(async w => {
+                        try {
+                            const meta = await fetchApi(`/${w.type}/${w.id}?api_key=${TMDB_API_KEY}`);
+                            if (meta) { 
+                                w.poster_path = meta.poster_path; 
+                                w.id = parseInt(w.id); 
+                            }
+                        } catch(e){}
+                    }));
+                    changed = true;
+                }
+
+                const newItems = traktWatchlist.filter(item => {
+                    let id = (item.movie || item.show)?.ids?.tmdb;
+                    return id && !localWatchlist.find(w => w.id == id);
                 });
-                localStorage.setItem('watchlist', JSON.stringify(localWatchlist));
+                
+                if (newItems.length > 0) {
+                    await Promise.all(newItems.map(async item => {
+                        let id, type, title, release_date;
+                        if (item.type === 'movie') { id = item.movie.ids.tmdb; type = 'movie'; title = item.movie.title; }
+                        else if (item.type === 'show') { id = item.show.ids.tmdb; type = 'tv'; title = item.show.title; }
+                        
+                        let poster_path = null;
+                        try {
+                            const meta = await fetchApi(`/${type}/${id}?api_key=${TMDB_API_KEY}`);
+                            if (meta) {
+                                poster_path = meta.poster_path;
+                                title = meta.title || meta.name || title;
+                                release_date = meta.release_date || meta.first_air_date;
+                            }
+                        } catch(e) {}
+                        
+                        localWatchlist.push({ 
+                            id: parseInt(id), // Integer to fix the === bug in UI
+                            type: type, 
+                            title: type === 'movie' ? title : undefined,
+                            name: type === 'tv' ? title : undefined,
+                            poster_path: poster_path,
+                            release_date: release_date,
+                            timestamp: new Date(item.listed_at).getTime() 
+                        });
+                    }));
+                    localStorage.setItem('watchlist', JSON.stringify(localWatchlist));
+                }
             }
 
             // Import Playback Progress
@@ -462,7 +498,7 @@ const TraktSync = {
                 let cw = [];
                 try { cw = JSON.parse(localStorage.getItem('continue_watching')) || []; } catch(e){}
 
-                playback.forEach(item => {
+                await Promise.all(playback.map(async item => {
                     let id, type, title;
                     if (item.type === 'movie' && item.movie && item.movie.ids && item.movie.ids.tmdb) {
                         id = item.movie.ids.tmdb; type = 'movie'; title = item.movie.title;
@@ -472,26 +508,34 @@ const TraktSync = {
 
                     if (id) {
                         const key = `progress_${id}`;
-                        let progData = { progress: item.progress, id: id, type: type, mediaType: type, title: title, isEstimated: true, updatedAt: new Date(item.paused_at).getTime() };
+                        let progData = { progress: item.progress, id: parseInt(id), type: type, mediaType: type, title: title, isEstimated: true, updatedAt: new Date(item.paused_at).getTime() };
+                        
                         try { 
                             const existing = JSON.parse(localStorage.getItem(key)); 
                             if (existing && existing.updatedAt && existing.updatedAt > progData.updatedAt) {
-                                // Local is newer, don't overwrite
-                                progData = null;
+                                progData = null; // Local is newer
                             } else if (existing) {
-                                // Preserve local duration data if possible
                                 progData = { ...existing, progress: item.progress, updatedAt: progData.updatedAt, isEstimated: true };
                             }
                         } catch(e) {}
                         
                         if (progData) {
+                            // If we don't have a poster, fetch it so the UI renders it
+                            if (!progData.poster && !progData.poster_path) {
+                                try {
+                                    const meta = await fetchApi(`/${type}/${id}?api_key=${TMDB_API_KEY}`);
+                                    if (meta) {
+                                        progData.poster_path = meta.poster_path;
+                                        progData.title = meta.title || meta.name || title;
+                                    }
+                                } catch(e){}
+                            }
                             localStorage.setItem(key, JSON.stringify(progData));
-                            cw = cw.filter(c_id => String(c_id) !== String(id));
-                            cw.unshift(id.toString());
+                            cw = cw.filter(c_id => parseInt(c_id) !== parseInt(id));
+                            cw.unshift(parseInt(id));
                         }
                     }
-                });
-                if (cw.length > 20) cw = cw.slice(0, 20);
+                }));
                 localStorage.setItem('continue_watching', JSON.stringify(cw));
             }
 
