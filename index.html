@@ -6664,8 +6664,8 @@
     // ── Service Worker ─────────────────────────────────────────────────────
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        // Appending dynamic version string to sw.js to ensure updates are detected
-        const swUrl = `./sw.js?v=${Date.now()}`;
+        // Register sw.js without dynamic timestamp to prevent infinite reload loops
+        const swUrl = `./sw.js`;
 
         navigator.serviceWorker.register(swUrl).then(registration => {
           // Check for updates manually on load
