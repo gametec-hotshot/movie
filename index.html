@@ -538,7 +538,6 @@
       aspect-ratio: 2/3;
       background: var(--card-bg);
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-      will-change: transform;
     }
 
     .card:hover {
@@ -561,6 +560,12 @@
       z-index: 1;
       border-radius: var(--border-radius);
       pointer-events: none;
+    }
+
+    @media (max-width: 768px) {
+      .ambient-glow {
+        display: none !important;
+      }
     }
     
     .card:hover .ambient-glow {
@@ -3349,6 +3354,7 @@
     const BASE_URL = "https://api.themoviedb.org/3";
     const IMG_URL = "https://image.tmdb.org/t/p/w500";
     const IMG_URL_ORIGINAL = "https://image.tmdb.org/t/p/original";
+    const IMG_URL_BG = "https://image.tmdb.org/t/p/w1280";
 
     // --- WATCHED EPISODES MIGRATION ---
     try {
@@ -4483,7 +4489,7 @@
 
       if (heroBg) {
         heroBg.style.opacity = '1';
-        heroBg.style.backgroundImage = `url(${IMG_URL_ORIGINAL}${item.backdrop_path})`;
+        heroBg.style.backgroundImage = `url(${IMG_URL_BG}${item.backdrop_path})`;
         // Reset animation
         heroBg.style.animation = 'none';
         heroBg.offsetHeight; /* trigger reflow */
@@ -5418,7 +5424,7 @@
       const runtime = type === 'movie' ? `${data.runtime} min` : `${data.number_of_seasons} Seasons`;
 
       // Extract Ambient Glow Color dynamically
-      const backdropUrl = data.backdrop_path ? `${IMG_URL_ORIGINAL}${data.backdrop_path}` : `${IMG_URL_ORIGINAL}${data.poster_path}`;
+      const backdropUrl = data.backdrop_path ? `${IMG_URL}${data.backdrop_path}` : `${IMG_URL}${data.poster_path}`;
       if (backdropUrl) {
         extractAverageColor(backdropUrl).then(color => {
           document.documentElement.style.setProperty('--ambient-color', color);
@@ -5629,7 +5635,7 @@
       const genresHtml = (data.genres && data.genres.length > 0) ? data.genres.map(g => `<span style="border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 5px 15px; font-size: 0.8rem; background: rgba(255,255,255,0.05); color: #ccc; white-space: nowrap;">${g.name}</span>`).join('') : '';
 
       detailsView.innerHTML = `
-        <div class="details-hero" style="background-image: url(${IMG_URL_ORIGINAL}${data.backdrop_path})">
+        <div class="details-hero" style="background-image: url(${IMG_URL_BG}${data.backdrop_path})">
           ${(type === 'movie' || type === 'tv') ? `
             <div class="hero-video-wrapper" id="hero-video-wrapper">
               <video muted loop playsinline id="bg-trailer"></video>
