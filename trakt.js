@@ -296,12 +296,25 @@ const TraktSync = {
             if (key.startsWith('progress_')) {
                 try {
                     const data = JSON.parse(localStorage.getItem(key));
-                    if (data.progress >= 90 && (data.mediaType === 'movie' || data.type === 'movie')) {
-                        payload.movies.push({
-                            ids: { tmdb: parseInt(data.id) },
-                            watched_at: new Date(data.updatedAt || Date.now()).toISOString()
-                        });
-                        count++;
+                    let mediaType = data.mediaType || data.type;
+                    if (!mediaType) {
+                        // Deduce from watchlist if possible, otherwise assume movie if no season/ep data
+                        mediaType = 'movie';
+                    }
+                    if (mediaType === 'movie') {
+                        if (data.progress >= 90) {
+                            payload.movies.push({
+                                ids: { tmdb: parseInt(data.id) },
+                                watched_at: new Date(data.updatedAt || Date.now()).toISOString()
+                            });
+                            count++;
+                        } else if (data.progress > 0) {
+                            // Partially watched movie -> Push to Trakt via Scrobble
+                            // (We do this asynchronously so we don't block the main thread too long, 
+                            // Trakt allows decent rate limits for initial syncs)
+                            TraktSync.scrobbleProgress(data.id, 'movie', null, null, data.progress).catch(e => console.log('Scrobble export failed', e));
+                            count++;
+                        }
                     }
                 } catch (e) { console.error("Error parsing progress", e); }
             }
@@ -348,7 +361,8 @@ const TraktSync = {
         if (localWatchlist.length > 0) {
             const watchlistPayload = { movies: [], shows: [] };
             localWatchlist.forEach(item => {
-                if (item.type === 'movie') watchlistPayload.movies.push({ ids: { tmdb: parseInt(item.id) } });
+                let type = item.type || item.mediaType || (item.title ? 'movie' : 'tv');
+                if (type === 'movie') watchlistPayload.movies.push({ ids: { tmdb: parseInt(item.id) } });
                 else watchlistPayload.shows.push({ ids: { tmdb: parseInt(item.id) } });
             });
             await TraktAuth.apiCall('/sync/watchlist', 'POST', watchlistPayload);
