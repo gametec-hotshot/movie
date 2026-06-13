@@ -78,15 +78,14 @@
     }
 
     html {
-      /* iOS FIX: Must be set on BOTH html AND body for overscroll-behavior
-         to fully suppress pull-to-refresh and swipe-back on iOS Safari/Chrome */
+      /* iOS FIX: Suppresses pull-to-refresh and swipe-back navigation on iOS Safari/Chrome.
+         Must be set on BOTH html AND body to take full effect. */
       overscroll-behavior: none;
-      /* iOS CENTERING FIX: scrollbar-gutter:stable permanently reserves the
-         scrollbar lane in the layout. This means toggling overflow:hidden on
-         the body does NOT cause any layout shift (the classic "content jumps
-         right" bug on iOS when a modal opens). */
-      scrollbar-gutter: stable;
+      /* NOTE: overflow-x MUST NOT be set on html — doing so breaks the mouse
+         scroll wheel on desktop by removing html as the viewport scroll container.
+         Horizontal overflow is already blocked by body { overflow-x: hidden } below. */
     }
+
 
     * {
       margin: 0;
@@ -1091,6 +1090,10 @@
       min-height: 100dvh;
       background: var(--bg-color);
       padding-bottom: 50px;
+      /* iOS FIX: Contain any horizontal overflow from inner scroll rows
+         (e.g. similar-scroll with negative margins) so it never causes
+         the page to grow wider than the viewport. */
+      overflow-x: hidden;
     }
 
     .back-to-top {
@@ -5686,7 +5689,7 @@
           <div style="margin-top: 30px; position: relative;">
             <h3 class="section-title">More Like This</h3>
             <button class="scroll-btn scroll-left" onclick="document.getElementById('similar-scroll').scrollBy({ left: -window.innerWidth * 0.8, behavior: 'smooth' })" style="opacity: 1; left: -25px;">&#10094;</button>
-            <div id="similar-scroll" style="display: flex; gap: 15px; overflow-x: auto; overflow-y: hidden; padding: 30px 10px; margin: -20px -10px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) transparent;">
+            <div id="similar-scroll" style="display: flex; gap: 15px; overflow-x: auto; overflow-y: hidden; padding: 30px 0 10px 0; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) transparent; overscroll-behavior-x: contain; touch-action: pan-x;">
               ${similarItems}
               ${viewAllCard}
             </div>
