@@ -4262,7 +4262,7 @@
     });
 
     const observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && searchResultsContainer.classList.contains('active')) {
+      if (entries[0].isIntersecting && searchResultsContainer.classList.contains('active') && !detailsView.classList.contains('active')) {
         fetchGridPage();
       }
     }, { rootMargin: '300px' });
@@ -5237,7 +5237,7 @@
       // After loading, check if we need more to fill the screen (sentinel visibility check)
       if (gridState.hasMore) {
         setTimeout(() => {
-          if (scrollSentinel.offsetParent === null) return; // Prevent background fetch loop
+          if (scrollSentinel.offsetParent === null || detailsView.classList.contains('active')) return; // Prevent background fetch loop when details are open
           const rect = scrollSentinel.getBoundingClientRect();
           if (rect.top < window.innerHeight + 500) { // Be more aggressive in loading
             fetchGridPage();
