@@ -154,7 +154,7 @@ const TraktAuth = {
 
     async apiCall(endpoint, method = 'GET', body = null) {
         const token = await this.getValidToken();
-        if (!token) return null;
+        if (!token) { console.warn('[Trakt] No valid token for', endpoint); return null; }
 
         const headers = {
             'Content-Type': 'application/json',
@@ -167,12 +167,19 @@ const TraktAuth = {
         if (body) options.body = JSON.stringify(body);
 
         try {
+            console.log(`[Trakt] ${method} ${endpoint}`, body ? JSON.stringify(body).substring(0, 200) : '');
             const res = await fetch(`${TRAKT_API_URL}${endpoint}`, options);
-            if (!res.ok) throw new Error(`Trakt API error: ${res.status}`);
+            if (!res.ok) {
+                const errText = await res.text();
+                console.error(`[Trakt] API error ${res.status} for ${endpoint}:`, errText.substring(0, 300));
+                throw new Error(`Trakt API error: ${res.status}`);
+            }
             const text = await res.text();
-            try { return JSON.parse(text); } catch(e) { return text; }
+            const parsed = (() => { try { return JSON.parse(text); } catch(e) { return text; } })();
+            console.log(`[Trakt] ${method} ${endpoint} → ${res.status}`, typeof parsed === 'object' ? parsed : text.substring(0, 100));
+            return parsed;
         } catch (e) {
-            console.error(e);
+            console.error('[Trakt] API call failed:', endpoint, e.message);
             return null;
         }
     }

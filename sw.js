@@ -14,7 +14,7 @@
  *   Never intercepted — must always come fresh from the network.
  */
 
-const CACHE_NAME = 'prisma-shell-v2.3';
+const CACHE_NAME = 'prisma-shell-v2.4';
 
 const STATIC_ASSETS = [
   './logo.png',
@@ -57,11 +57,10 @@ self.addEventListener('fetch', (event) => {
   // ── STRATEGY 1: Network-First for navigation (page loads) ──────────────────
   // iOS Safari & Chrome require a real HTTP response for navigate-mode fetches.
   // Serving a cached page here after a SW update causes "can't open this page".
-  if (event.request.mode === 'navigate') {
+  if (event.request.mode === 'navigate' || url.pathname.endsWith('.js')) {
     event.respondWith(
       fetch(event.request).catch(() => {
-        // Offline fallback: serve cached index.html if network is unavailable
-        return caches.match('./index.html');
+        return caches.match(event.request);
       })
     );
     return;
