@@ -14,7 +14,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" href="logo.png">
-  <meta name="version" content="2.2">
+  <meta name="version" content="2.3">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -24,7 +24,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" as="style"
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;600;700;800&display=swap">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;600;700;800&display=swap"
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;600;700;800&display=swap"
     rel="stylesheet">
   <style>
     :root {
@@ -108,7 +109,16 @@
       overscroll-behavior-y: none;
     }
 
-    h1, h2, h3, h4, h5, h6, .card-title, .ep-title, .hero-title, .section-title {
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    .card-title,
+    .ep-title,
+    .hero-title,
+    .section-title {
       font-family: var(--heading-font);
       font-weight: 700;
     }
@@ -319,8 +329,13 @@
     }
 
     @keyframes kenburns {
-      0% { transform: scale(1); }
-      100% { transform: scale(1.1); }
+      0% {
+        transform: scale(1);
+      }
+
+      100% {
+        transform: scale(1.1);
+      }
     }
 
     .hero::after {
@@ -451,7 +466,7 @@
 
     /* iOS Safari fix: grid children must have min-width:0 to prevent
        nowrap text content from expanding cells beyond their track size */
-    .server-grid > .btn {
+    .server-grid>.btn {
       min-width: 0;
     }
 
@@ -569,7 +584,7 @@
       z-index: 2;
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1);
     }
-    
+
     .ambient-glow {
       position: absolute;
       top: 5%;
@@ -591,12 +606,12 @@
         display: none !important;
       }
     }
-    
+
     .card:hover .ambient-glow {
       opacity: 0.8;
     }
-    
-    .card > img {
+
+    .card>img {
       position: relative;
       z-index: 2;
       border-radius: var(--border-radius);
@@ -1025,7 +1040,7 @@
       transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.05) inset;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
       will-change: transform;
     }
 
@@ -1419,9 +1434,11 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
       cursor: pointer;
     }
+
     .switch-container:hover {
       background: rgba(255, 255, 255, 0.08);
     }
+
     .switch {
       position: relative;
       display: inline-block;
@@ -1429,19 +1446,25 @@
       height: 24px;
       margin: 0;
     }
-    .switch input { 
+
+    .switch input {
       opacity: 0;
       width: 0;
       height: 0;
     }
+
     .slider {
       position: absolute;
       cursor: pointer;
-      top: 0; left: 0; right: 0; bottom: 0;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       background-color: rgba(255, 255, 255, 0.2);
       transition: .4s;
       border-radius: 24px;
     }
+
     .slider:before {
       position: absolute;
       content: "";
@@ -1452,12 +1475,14 @@
       background-color: white;
       transition: .4s;
       border-radius: 50%;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
-    .switch input:checked + .slider {
+
+    .switch input:checked+.slider {
       background-color: #46d369;
     }
-    .switch input:checked + .slider:before {
+
+    .switch input:checked+.slider:before {
       transform: translateX(20px);
     }
 
@@ -3002,7 +3027,8 @@
           <span>App Info</span>
         </div>
         <div class="settings-dropdown-item" id="trakt-login-btn">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
           </svg>
           <span id="trakt-login-text">Login to Trakt.tv</span>
@@ -3161,9 +3187,11 @@
         <span class="cache-stats" id="cache-total-size">Used: 0 KB</span>
       </div>
       <div class="cache-actions">
-        <button class="cache-btn cache-btn-primary" id="trakt-sync-btn" title="Sync Local History to Trakt" style="background: rgba(229, 9, 20, 0.2); border-color: #e50914;">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+        <button class="cache-btn cache-btn-primary" id="trakt-sync-btn" title="Sync Local History to Trakt"
+          style="background: rgba(229, 9, 20, 0.2); border-color: #e50914;">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" viewBox="0 0 24 24">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
           </svg>
           Sync to Trakt
         </button>
@@ -3235,7 +3263,8 @@
       <div class="hero-bg" id="hero-bg" style="opacity: 0;"></div>
       <div class="hero-content">
         <h1 class="hero-title skeleton-text" id="hero-title" style="min-width: 300px; min-height: 50px;"></h1>
-        <p class="hero-desc skeleton-text" id="hero-desc" style="min-width: 400px; min-height: 100px; margin-bottom: 20px;"></p>
+        <p class="hero-desc skeleton-text" id="hero-desc"
+          style="min-width: 400px; min-height: 100px; margin-bottom: 20px;"></p>
         <div class="hero-buttons" id="hero-buttons" style="opacity: 0; pointer-events: none;">
           <button class="btn btn-play" id="hero-play">▶ Play</button>
           <button class="btn btn-info" id="hero-info">ⓘ More Info</button>
@@ -3283,7 +3312,7 @@
   <footer class="site-footer">
     <p>&copy; 2026 Prisma Streaming. Built for seamless entertainment.</p>
     <p><a href="javascript:void(0)" onclick="showLegal('tos')">Terms of Service</a> | <a href="javascript:void(0)"
-        onclick="showLegal('privacy')">Privacy Policy</a> | <span class="version-tag">2.2</span></p>
+        onclick="showLegal('privacy')">Privacy Policy</a> | <span class="version-tag">2.3</span></p>
   </footer>
 
   <div class="modal" id="app-info-modal">
@@ -3292,20 +3321,20 @@
       <button class="close-btn" id="close-app-info"
         style="top: 10px; right: 10px; width: 40px; height: 40px; font-size: 24px;">&times;</button>
       <div style="text-align: center; margin-bottom: 25px;">
-        <h2 style="color: #fff; margin-bottom: 5px;">Prisma <span style="color: var(--primary-color);">2.2</span></h2>
+        <h2 style="color: #fff; margin-bottom: 5px;">Prisma <span style="color: var(--primary-color);">2.3</span></h2>
         <p style="color: #aaa; font-size: 0.9rem;">Built for seamless entertainment.</p>
       </div>
       <div
         style="text-align: left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; margin-bottom: 25px;">
-        <h3 style="color: #fff; margin-bottom: 10px; font-size: 1.1rem;">What's New in 2.2</h3>
+        <h3 style="color: #fff; margin-bottom: 10px; font-size: 1.1rem;">What's New in 2.3</h3>
         <ul style="color: #ccc; font-size: 0.9rem; line-height: 1.6; padding-left: 20px;">
-          <li><strong>Trakt.tv Integration:</strong> Two-way sync with Trakt.tv to automatically track your watch history in the cloud.</li>
+          <li><strong>Auto-Repair Protocol:</strong> Trakt Sync automatically repairs missing movie posters and corrects Watchlist bugs from imported items.</li>
+          <li><strong>Trakt.tv Integration:</strong> Two-way sync with Trakt.tv to automatically track your watch
+            history in the cloud.</li>
           <li><strong>Cinematic Background Trailers:</strong> Seamlessly auto-playing trailers for movies and TV shows
             (including Anime) that fade out smoothly as you scroll.</li>
           <li><strong>Premium Trailer UI:</strong> Added a sleek mute/unmute button and perfectly tuned shadow gradients
             to enhance text readability while showcasing the video.</li>
-          <li><strong>Smart Intro Skipping:</strong> Automatically skips the first 5 seconds of trailers to bypass
-            annoying studio logos.</li>
         </ul>
       </div>
       <div style="text-align: center;">
@@ -4031,10 +4060,10 @@
         if (!window._lastProgressSave || now - window._lastProgressSave > 5000) {
           localStorage.setItem(`progress_${meta.id}`, JSON.stringify(progressData));
           window._lastProgressSave = now;
-            if (typeof TraktSync !== 'undefined' && (!window._lastTraktScrobble || now - window._lastTraktScrobble > 30000)) {
-              TraktSync.scrobbleProgress(meta.id, meta.mediaType || meta.type, meta.currentSeason || meta.season, meta.currentEpisode || meta.episode, progressData.progress);
-              window._lastTraktScrobble = now;
-            }
+          if (typeof TraktSync !== 'undefined' && (!window._lastTraktScrobble || now - window._lastTraktScrobble > 30000)) {
+            TraktSync.scrobbleProgress(meta.id, meta.mediaType || meta.type, meta.currentSeason || meta.season, meta.currentEpisode || meta.episode, progressData.progress);
+            window._lastTraktScrobble = now;
+          }
         }
 
         // Dynamic timing: trigger next prompt near end credits
@@ -4510,7 +4539,7 @@
       try {
         const progressKeys = [];
         const watchedSeriesKeys = [];
-        
+
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
           if (key && key.startsWith('progress_')) {
@@ -4519,12 +4548,12 @@
             watchedSeriesKeys.push(key);
           }
         }
-        
+
         // Cleanup progress_ keys
         if (progressKeys.length > 50) {
           const items = progressKeys.map(k => {
-            try { return { key: k, data: JSON.parse(localStorage.getItem(k)) }; } 
-            catch(e) { return { key: k, data: { updatedAt: 0 } }; }
+            try { return { key: k, data: JSON.parse(localStorage.getItem(k)) }; }
+            catch (e) { return { key: k, data: { updatedAt: 0 } }; }
           });
           items.sort((a, b) => (b.data.updatedAt || 0) - (a.data.updatedAt || 0));
           const toRemove = items.slice(50);
@@ -4534,8 +4563,8 @@
         // Cleanup watched_series_ keys
         if (watchedSeriesKeys.length > 50) {
           const items = watchedSeriesKeys.map(k => {
-            try { return { key: k, data: JSON.parse(localStorage.getItem(k)) }; } 
-            catch(e) { return { key: k, data: { _updatedAt: 0 } }; }
+            try { return { key: k, data: JSON.parse(localStorage.getItem(k)) }; }
+            catch (e) { return { key: k, data: { _updatedAt: 0 } }; }
           });
           items.sort((a, b) => (b.data._updatedAt || 0) - (a.data._updatedAt || 0));
           const toRemove = items.slice(50);
@@ -4634,7 +4663,7 @@
       const title = item.title || item.name || item.original_name;
       const type = item.media_type || (item.title ? 'movie' : 'tv');
       const heroBg = document.getElementById('hero-bg');
-      
+
       // Remove skeleton classes when data is loaded
       document.getElementById('hero-skeleton-bg')?.remove();
       document.getElementById('hero-title').classList.remove('skeleton-text');
@@ -4650,7 +4679,7 @@
         // Reset animation
         heroBg.style.animation = 'none';
         heroBg.offsetHeight; /* trigger reflow */
-        heroBg.style.animation = null; 
+        heroBg.style.animation = null;
       }
       heroTitle.textContent = title;
       heroDesc.textContent = item.overview;
@@ -4740,12 +4769,12 @@
         const key = `watched_series_${id}`;
         const seriesData = JSON.parse(localStorage.getItem(key) || '{}');
         const watchedInSeason = seriesData[season] || [];
-        
+
         const allEpisodes = window.currentSeasonData.episodes.map(ep => parseInt(ep.episode_number));
-        
+
         // Check if all episodes are already watched
         const allWatched = allEpisodes.every(epNum => watchedInSeason.includes(epNum));
-        
+
         if (allWatched) {
           // Unmark all
           seriesData[season] = watchedInSeason.filter(epNum => !allEpisodes.includes(epNum));
@@ -4754,10 +4783,10 @@
           // Mark all
           seriesData[season] = [...new Set([...watchedInSeason, ...allEpisodes])];
         }
-        
+
         seriesData._updatedAt = Date.now();
         localStorage.setItem(key, JSON.stringify(seriesData));
-        
+
         // Update the switch state if it exists
         const toggle = document.getElementById('season-watch-toggle');
         if (toggle) toggle.checked = !allWatched;
@@ -4970,7 +4999,7 @@
         img.src = imgSrc;
         img.alt = itemTitle;
         img.loading = 'lazy';
-        
+
         const ambientGlow = document.createElement('div');
         ambientGlow.className = 'ambient-glow';
         ambientGlow.style.backgroundImage = `url('${imgSrc}')`;
@@ -5222,7 +5251,7 @@
         window.scrollTo(0, 0);
       } else if (view === 'grid') {
         const isSameGrid = gridState.filterType === (filterType || null) && gridState.providerId === (providerId || null) && searchGrid.innerHTML !== '';
-        
+
         searchResultsContainer.classList.add('active');
         document.getElementById('search-query-display').innerText = title;
 
@@ -5262,13 +5291,13 @@
         const isSameGrid = gridState.filterType === 'anime' && searchGrid.innerHTML !== '';
         searchResultsContainer.classList.add('active');
         document.getElementById('search-query-display').innerText = 'Anime World';
-        
+
         if (!isSameGrid) {
           gridState = { page: 1, providerId: null, filterType: 'anime', query: null, isLoading: false, hasMore: true };
           searchGrid.innerHTML = '';
           fetchGridPage();
         }
-        
+
         showFilter(false); // We want specific sorting for anime
         showGenreFilter(false);
         navItems[3].classList.add('active');
@@ -5293,12 +5322,12 @@
           searchGrid.innerHTML = '';
           fetchGridPage();
         }
-        
+
         if (state.scrollY) setTimeout(() => window.scrollTo(0, state.scrollY), 50);
         else window.scrollTo(0, 0);
       } else if (view === 'similar_all') {
         const isSameGrid = gridState.filterType === 'similar_all' && gridState.sourceId === id && gridState.sourceType === type && searchGrid.innerHTML !== '';
-        
+
         document.getElementById('search-query-display').innerText = `Similar to "${title}"`;
         searchResultsContainer.classList.add('active');
         globalBackBtn.classList.add('active');
@@ -5611,7 +5640,7 @@
 
       const data = await fetchApi(`/${type}/${id}?api_key=${TMDB_API_KEY}&append_to_response=credits,similar,videos,external_ids`);
       if (fetchId !== currentDetailsFetchId) return; // Prevent race conditions
-      
+
       currentDetailsData = data;
 
       const imdbId = data.external_ids?.imdb_id;
@@ -5790,8 +5819,8 @@
       } else {
         const key = `watched_series_${id}`;
         let preloadedSeriesData = {};
-        try { preloadedSeriesData = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e) {}
-        
+        try { preloadedSeriesData = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { }
+
         const seasons = data.seasons ? data.seasons.filter(s => s.season_number > 0) : [];
         const options = seasons.map(s => {
           const watchedInSeason = preloadedSeriesData[s.season_number] || [];
@@ -5951,7 +5980,7 @@
                   window._currentScrollFadeHandler = () => {
                     // Disable scroll fade entirely on touch devices to prevent GPU crashes
                     if (isTouchDevice) return;
-                    
+
                     if (!fadeTicking) {
                       window.requestAnimationFrame(() => {
                         if (!document.getElementById('bg-trailer')) {
@@ -5962,7 +5991,7 @@
                         const scrollY = window.scrollY;
                         const fadeStart = 50;
                         const fadeEnd = 400;
-                        
+
                         if (scrollY > fadeEnd) {
                           videoElement.style.opacity = 0;
                           if (!videoElement.paused) {
@@ -6053,7 +6082,7 @@
 
       const key = `watched_series_${id}`;
       let preloadedSeriesData = {};
-      try { preloadedSeriesData = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e) {}
+      try { preloadedSeriesData = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { }
 
       // Sync season toggle switch state
       const seasonToggle = document.getElementById('season-watch-toggle');
@@ -6704,13 +6733,13 @@
 
         // Re-inject estimated currentTime if imported from Trakt
         try {
-            const tempSaved = JSON.parse(localStorage.getItem(`progress_${id}`));
-            if (tempSaved && tempSaved.progress && (!tempSaved.currentTime || tempSaved.isEstimated)) {
-                tempSaved.currentTime = (tempSaved.progress / 100) * durationSeconds;
-                tempSaved.duration = durationSeconds;
-                localStorage.setItem(`progress_${id}`, JSON.stringify(tempSaved));
-            }
-        } catch(e) {}
+          const tempSaved = JSON.parse(localStorage.getItem(`progress_${id}`));
+          if (tempSaved && tempSaved.progress && (!tempSaved.currentTime || tempSaved.isEstimated)) {
+            tempSaved.currentTime = (tempSaved.progress / 100) * durationSeconds;
+            tempSaved.duration = durationSeconds;
+            localStorage.setItem(`progress_${id}`, JSON.stringify(tempSaved));
+          }
+        } catch (e) { }
 
         // 1. Instant "Ping" registration at 0s
         let cw = getContinueWatching();
@@ -7109,10 +7138,10 @@
             if (!window._lastProgressSave || now - window._lastProgressSave > 5000) {
               localStorage.setItem(`progress_${tmdbId}`, JSON.stringify(savedObj));
               window._lastProgressSave = now;
-            if (typeof TraktSync !== 'undefined' && (!window._lastTraktScrobble || now - window._lastTraktScrobble > 30000)) {
-              TraktSync.scrobbleProgress(meta.id, meta.mediaType || meta.type, meta.currentSeason || meta.season, meta.currentEpisode || meta.episode, progressData.progress);
-              window._lastTraktScrobble = now;
-            }
+              if (typeof TraktSync !== 'undefined' && (!window._lastTraktScrobble || now - window._lastTraktScrobble > 30000)) {
+                TraktSync.scrobbleProgress(meta.id, meta.mediaType || meta.type, meta.currentSeason || meta.season, meta.currentEpisode || meta.episode, progressData.progress);
+                window._lastTraktScrobble = now;
+              }
             }
           }
 
@@ -7454,10 +7483,10 @@
             const seriesData = JSON.parse(localStorage.getItem(key) || '{}');
             Object.keys(seriesData).filter(k => k !== '_updatedAt').forEach(season => {
               seriesData[season].forEach(episode => {
-                 watchedEpisodes.push({ key, id, season, episode });
+                watchedEpisodes.push({ key, id, season, episode });
               });
             });
-          } catch(e) {}
+          } catch (e) { }
         } else if (key === 'watchlist') {
           try { watchlist = JSON.parse(localStorage.getItem(key)) || []; } catch (e) { }
         }
@@ -7910,13 +7939,13 @@
       playerIframe.src = embedUrl;
       const switchBtn = document.getElementById('ac-switch-btn');
       if (switchBtn) switchBtn.style.display = 'none';
-      
+
       // Pause background trailer if it's playing
       const bgTrailer = document.getElementById('bg-trailer');
       if (bgTrailer && !bgTrailer.paused) {
         bgTrailer.pause();
       }
-      
+
       playerModal.classList.add('active');
     };
 
@@ -8158,13 +8187,13 @@
       playerIframe.src = url;
       const switchBtn = document.getElementById('ac-switch-btn');
       if (switchBtn) switchBtn.style.display = 'none';
-      
+
       // Pause background trailer if it's playing
       const bgTrailer = document.getElementById('bg-trailer');
       if (bgTrailer && !bgTrailer.paused) {
         bgTrailer.pause();
       }
-      
+
       playerModal.classList.add('active');
     };
 
@@ -8178,43 +8207,43 @@
       } else {
         video.muted = true;
         icon.innerHTML = `<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>`;
-        }
-      };
-
-    </script>
-    <script src="trakt.js"></script>
-    <script>
-      // Initialize Trakt UI
-      const traktLoginBtn = document.getElementById('trakt-login-btn');
-      const traktLoginText = document.getElementById('trakt-login-text');
-      const traktSyncBtn = document.getElementById('trakt-sync-btn');
-
-      if (TraktAuth.isLoggedIn()) {
-          traktLoginText.textContent = "Disconnect Trakt";
-          traktLoginBtn.style.color = "#e50914";
-          
-          traktLoginBtn.addEventListener('click', () => {
-              if (confirm('Disconnect from Trakt.tv?')) {
-                  TraktAuth.logout();
-              }
-          });
-
-          // Sync logic
-          traktSyncBtn.addEventListener('click', () => {
-              TraktSync.fullSync();
-          });
-      } else {
-          traktLoginBtn.addEventListener('click', () => {
-              TraktAuth.login();
-          });
-          
-          traktSyncBtn.addEventListener('click', () => {
-              if(confirm("You need to login to Trakt.tv first. Login now?")) {
-                  TraktAuth.login();
-              }
-          });
       }
-    </script>
+    };
+
+  </script>
+  <script src="trakt.js"></script>
+  <script>
+    // Initialize Trakt UI
+    const traktLoginBtn = document.getElementById('trakt-login-btn');
+    const traktLoginText = document.getElementById('trakt-login-text');
+    const traktSyncBtn = document.getElementById('trakt-sync-btn');
+
+    if (TraktAuth.isLoggedIn()) {
+      traktLoginText.textContent = "Disconnect Trakt";
+      traktLoginBtn.style.color = "#e50914";
+
+      traktLoginBtn.addEventListener('click', () => {
+        if (confirm('Disconnect from Trakt.tv?')) {
+          TraktAuth.logout();
+        }
+      });
+
+      // Sync logic
+      traktSyncBtn.addEventListener('click', () => {
+        TraktSync.fullSync();
+      });
+    } else {
+      traktLoginBtn.addEventListener('click', () => {
+        TraktAuth.login();
+      });
+
+      traktSyncBtn.addEventListener('click', () => {
+        if (confirm("You need to login to Trakt.tv first. Login now?")) {
+          TraktAuth.login();
+        }
+      });
+    }
+  </script>
 </body>
 
 </html>

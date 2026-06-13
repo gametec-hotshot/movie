@@ -14,7 +14,7 @@
  *   Never intercepted — must always come fresh from the network.
  */
 
-const CACHE_NAME = 'prisma-shell-v2.2';
+const CACHE_NAME = 'prisma-shell-v2.3';
 
 const STATIC_ASSETS = [
   './logo.png',
