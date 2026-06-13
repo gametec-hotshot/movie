@@ -447,6 +447,14 @@
       gap: 15px;
       width: 100%;
       margin-bottom: 15px;
+      overflow: hidden;
+    }
+
+    /* iOS Safari fix: grid children must have min-width:0 to prevent
+       nowrap text content from expanding cells beyond their track size */
+    .server-grid > .btn {
+      min-width: 0;
+      overflow: hidden;
     }
 
     @media (max-width: 600px) {
@@ -1222,8 +1230,11 @@
       position: relative;
       z-index: 10;
       max-width: 850px;
+      width: 100%;
       padding-top: 60px;
       /* Space for the navbar */
+      /* iOS fix: prevent children from overflowing the viewport */
+      overflow: hidden;
     }
 
     .details-title {
@@ -1752,6 +1763,7 @@
         flex-direction: column;
         justify-content: flex-start;
         align-items: center;
+        overflow-x: hidden;
       }
 
       .details-content {
