@@ -96,6 +96,8 @@ const SupabaseSync = {
                     user_id: user.id,
                     tmdb_id: parseInt(item.id),
                     media_type: item.media_type || (item.title ? 'movie' : 'tv'),
+                    title: item.title || item.name || null,
+                    poster_path: item.poster_path || null,
                     added_at: new Date(item.timestamp || Date.now()).toISOString()
                 }, { onConflict: 'user_id, tmdb_id, media_type' });
             }
@@ -116,7 +118,9 @@ const SupabaseSync = {
                         media_type: progData.mediaType || progData.type || 'movie',
                         season_number: progData.season || progData.currentSeason || null,
                         episode_number: progData.episode || progData.currentEpisode || null,
-                        progress_seconds: progData.progress || 0,
+                        progress_seconds: progData.progress || progData.currentTime || 0,
+                        title: progData.title || null,
+                        poster_path: progData.poster || progData.poster_path || null,
                         updated_at: new Date(progData.updatedAt || Date.now()).toISOString()
                     }, { onConflict: 'user_id, tmdb_id, media_type' });
                 }
@@ -130,21 +134,21 @@ const SupabaseSync = {
         const user = await SupabaseAuth.getUser();
         if (!user) return;
 
-        // Pull Watchlist
+        // Pull Watchlist — with title and poster_path
         try {
             const { data: cloudWatchlist } = await supabaseClient.from('my_list').select('*').eq('user_id', user.id);
             if (cloudWatchlist && cloudWatchlist.length > 0) {
                 let localWatchlist = JSON.parse(localStorage.getItem('watchlist')) || [];
                 let changed = false;
-                
+
                 for (const cloudItem of cloudWatchlist) {
                     if (!localWatchlist.find(w => parseInt(w.id) === cloudItem.tmdb_id)) {
-                        // Needs to fetch poster/title to be fully valid in UI
-                        // For now we push a basic object, the UI might need to self-repair missing posters (like Trakt sync does)
                         localWatchlist.push({
                             id: cloudItem.tmdb_id,
                             media_type: cloudItem.media_type,
-                            timestamp: new Date(cloudItem.added_at).getTime()
+                            title: cloudItem.title || null,
+                            poster_path: cloudItem.poster_path || null,
+                            timestamp: cloudItem.added_at ? new Date(cloudItem.added_at).getTime() : Date.now()
                         });
                         changed = true;
                     }
@@ -160,7 +164,7 @@ const SupabaseSync = {
             const { data: cloudCW } = await supabaseClient.from('continue_watching').select('*').eq('user_id', user.id).order('updated_at', { ascending: false });
             if (cloudCW && cloudCW.length > 0) {
                 let cw = JSON.parse(localStorage.getItem('continue_watching')) || [];
-                
+
                 for (const cloudItem of cloudCW) {
                     const key = `progress_${cloudItem.tmdb_id}`;
                     let progData = {
@@ -172,21 +176,36 @@ const SupabaseSync = {
                         currentSeason: cloudItem.season_number,
                         currentEpisode: cloudItem.episode_number,
                         progress: cloudItem.progress_seconds,
+                        currentTime: cloudItem.progress_seconds,
+                        title: cloudItem.title || null,
+                        poster: cloudItem.poster_path || null,
+                        poster_path: cloudItem.poster_path || null,
                         updatedAt: new Date(cloudItem.updated_at).getTime()
                     };
 
                     let existing;
-                    try { existing = JSON.parse(localStorage.getItem(key)); } catch(e){}
+                    try { existing = JSON.parse(localStorage.getItem(key)); } catch (e) { }
 
-                    // Merge: take the newest
-                    if (!existing || existing.updatedAt < progData.updatedAt) {
-                        if (existing) {
-                            progData = { ...existing, ...progData };
-                        }
+                    // Merge: prefer existing local data (has more detail), but fill in missing fields from cloud
+                    if (!existing) {
                         localStorage.setItem(key, JSON.stringify(progData));
-                        cw = cw.filter(id => parseInt(id) !== cloudItem.tmdb_id);
-                        cw.unshift(cloudItem.tmdb_id);
+                    } else if (existing.updatedAt < progData.updatedAt) {
+                        // Cloud is newer — merge but keep existing poster/title if cloud doesn't have them
+                        progData = {
+                            ...progData,
+                            ...existing,
+                            progress: progData.progress,
+                            currentTime: progData.currentTime,
+                            updatedAt: progData.updatedAt,
+                            // Fill in poster/title from cloud if local is missing them
+                            poster: existing.poster || progData.poster,
+                            title: existing.title || progData.title
+                        };
+                        localStorage.setItem(key, JSON.stringify(progData));
                     }
+
+                    cw = cw.filter(id => parseInt(id) !== cloudItem.tmdb_id);
+                    cw.unshift(cloudItem.tmdb_id);
                 }
                 localStorage.setItem('continue_watching', JSON.stringify(cw));
             }
@@ -215,7 +234,7 @@ const SupabaseSync = {
     async updateProgress(id, type, progress, season = null, episode = null) {
         const user = await SupabaseAuth.getUser();
         if (!user) return;
-        
+
         await supabaseClient.from('continue_watching').upsert({
             user_id: user.id,
             tmdb_id: parseInt(id),
@@ -301,7 +320,7 @@ async function initSupabaseUI() {
         authSubmitBtn.addEventListener('click', async () => {
             const email = authEmail.value.trim();
             const password = authPassword.value;
-            
+
             if (!email || !password) {
                 authError.textContent = 'Please enter both email and password.';
                 authError.style.display = 'block';
@@ -334,11 +353,11 @@ async function initSupabaseUI() {
                 if (!result.error) {
                     closeModal();
                     updateUIState();
-                    
+
                     // Sync cloud and local data
                     await SupabaseSync.pullAllFromCloud();
                     await SupabaseSync.syncAllToCloud();
-                    
+
                     // Refresh the page so UI renders the merged data
                     window.location.reload();
                 }
@@ -350,7 +369,7 @@ async function initSupabaseUI() {
                 authError.textContent = result.error.message;
                 authError.style.display = 'block';
             }
-            
+
             authSubmitBtn.textContent = isSignUpMode ? 'Sign Up' : 'Sign In';
             authSubmitBtn.disabled = false;
         });
@@ -372,7 +391,7 @@ async function initSupabaseUI() {
             statusText.textContent = 'Connected';
             emailDisplay.textContent = user.email;
             emailDisplay.style.display = 'block';
-            
+
             navSigninBtn.style.display = 'none';
             navSignoutBtn.style.display = 'flex';
         } else {
@@ -380,7 +399,7 @@ async function initSupabaseUI() {
             statusDot.style.boxShadow = '0 0 8px rgba(255, 68, 68, 0.6)';
             statusText.textContent = 'Not Signed In';
             emailDisplay.style.display = 'none';
-            
+
             navSigninBtn.style.display = 'flex';
             navSignoutBtn.style.display = 'none';
         }
