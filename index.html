@@ -4690,6 +4690,41 @@
       renderContinueWatching();
       renderWatchlistRow();
 
+      // Smart Poster Recovery: fix watchlist items pulled from Supabase that are missing poster/title
+      (async function recoverWatchlistPosters() {
+        try {
+          let list = getWatchlist();
+          const needsRecovery = list.filter(item => !item.poster_path);
+          if (needsRecovery.length === 0) return;
+
+          let changed = false;
+          for (const item of needsRecovery) {
+            const type = item.media_type || 'movie';
+            const data = await fetchApi(`/${type}/${item.id}?api_key=${TMDB_API_KEY}`);
+            if (data) {
+              const idx = list.findIndex(i => i.id == item.id);
+              if (idx > -1) {
+                list[idx].poster_path = data.poster_path || list[idx].poster_path;
+                list[idx].title = data.title || data.name || list[idx].title;
+                list[idx].vote_average = data.vote_average || list[idx].vote_average;
+                list[idx].release_date = data.release_date || data.first_air_date || list[idx].release_date;
+                if (data.poster_path) changed = true;
+              }
+            }
+          }
+          if (changed) {
+            localStorage.setItem('watchlist', JSON.stringify(list));
+            renderWatchlistRow();
+            // Also update Supabase with the recovered data
+            if (typeof SupabaseSync !== 'undefined') {
+              SupabaseSync.syncAllToCloud();
+            }
+          }
+        } catch (e) {
+          console.warn('Watchlist poster recovery failed:', e);
+        }
+      })();
+
       if (trending) createRow("Trending Now", trending.results);
 
       // Trending Anime Row
@@ -4986,7 +5021,7 @@
           release_date: item.release_date || item.first_air_date
         });
         if (typeof TraktSync !== 'undefined') TraktSync.addToWatchlist(item.id, type);
-        if (typeof SupabaseSync !== 'undefined') SupabaseSync.addWatchlist(item.id, type);
+        if (typeof SupabaseSync !== 'undefined') SupabaseSync.addWatchlist(item.id, type, item.title || item.name || item.original_name, item.poster_path);
       }
       localStorage.setItem('watchlist', JSON.stringify(list));
       renderWatchlistRow();

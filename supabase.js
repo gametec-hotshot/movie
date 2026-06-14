@@ -215,13 +215,15 @@ const SupabaseSync = {
         }
     },
 
-    async addWatchlist(id, type) {
+    async addWatchlist(id, type, title = null, posterPath = null) {
         const user = await SupabaseAuth.getUser();
         if (!user) return;
         await supabaseClient.from('my_list').upsert({
             user_id: user.id,
             tmdb_id: parseInt(id),
             media_type: type,
+            title: title || null,
+            poster_path: posterPath || null,
             added_at: new Date().toISOString()
         }, { onConflict: 'user_id, tmdb_id, media_type' });
     },
