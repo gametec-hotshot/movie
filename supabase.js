@@ -256,7 +256,7 @@ const SupabaseSync = {
 
 // Trakt Connection Sync — Persist Trakt OAuth tokens in Supabase
 const TraktConnectionSync = {
-    async saveTraktTokens(accessToken, refreshToken, traktUserId = null) {
+    async saveTraktTokens(accessToken, refreshToken, traktUserId = null, expiresAt = null) {
         const user = await SupabaseAuth.getUser();
         if (!user || !supabaseClient) return;
 
@@ -264,7 +264,8 @@ const TraktConnectionSync = {
             user_id: user.id,
             trakt_user_id: traktUserId,
             access_token: accessToken,
-            refresh_token: refreshToken
+            refresh_token: refreshToken,
+            expires_at: expiresAt || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()
         }, { onConflict: 'user_id' });
 
         if (error) {
@@ -315,14 +316,15 @@ const TraktConnectionSync = {
         }
     },
 
-    async updateTraktTokens(accessToken, refreshToken) {
+    async updateTraktTokens(accessToken, refreshToken, expiresAt = null) {
         const user = await SupabaseAuth.getUser();
         if (!user || !supabaseClient) return;
 
         try {
             await supabaseClient.from('trakt_connections').update({
                 access_token: accessToken,
-                refresh_token: refreshToken
+                refresh_token: refreshToken,
+                expires_at: expiresAt || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()
             }).eq('user_id', user.id);
         } catch (e) {
             console.warn('[Supabase] Could not update Trakt tokens:', e);

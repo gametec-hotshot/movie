@@ -96,7 +96,8 @@ const TraktAuth = {
                             traktUserId = profile.username || null;
                         }
                     } catch(e) { console.warn('[Trakt] Could not fetch profile for Supabase:', e); }
-                    await TraktConnectionSync.saveTraktTokens(data.access_token, data.refresh_token, traktUserId);
+                    const expiresAt = new Date((data.created_at + data.expires_in) * 1000).toISOString();
+                    await TraktConnectionSync.saveTraktTokens(data.access_token, data.refresh_token, traktUserId, expiresAt);
                 }
 
                 // Clean URL
@@ -168,7 +169,8 @@ const TraktAuth = {
                 
                 // Keep Supabase in sync with refreshed tokens
                 if (typeof TraktConnectionSync !== 'undefined') {
-                    TraktConnectionSync.updateTraktTokens(data.access_token, data.refresh_token);
+                    const expiresAt = new Date((data.created_at + data.expires_in) * 1000).toISOString();
+                    TraktConnectionSync.updateTraktTokens(data.access_token, data.refresh_token, expiresAt);
                 }
                 
                 return data.access_token;
