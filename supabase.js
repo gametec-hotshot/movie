@@ -260,16 +260,17 @@ const TraktConnectionSync = {
         const user = await SupabaseAuth.getUser();
         if (!user || !supabaseClient) return;
 
-        try {
-            await supabaseClient.from('trakt_connections').upsert({
-                user_id: user.id,
-                trakt_user_id: traktUserId,
-                access_token: accessToken,
-                refresh_token: refreshToken
-            }, { onConflict: 'user_id' });
+        const { error } = await supabaseClient.from('trakt_connections').upsert({
+            user_id: user.id,
+            trakt_user_id: traktUserId,
+            access_token: accessToken,
+            refresh_token: refreshToken
+        }, { onConflict: 'user_id' });
+
+        if (error) {
+            console.error('[Supabase] Failed to save Trakt tokens:', error.message, error);
+        } else {
             console.log('[Supabase] Trakt tokens saved to cloud');
-        } catch (e) {
-            console.warn('[Supabase] Could not save Trakt tokens:', e);
         }
     },
 

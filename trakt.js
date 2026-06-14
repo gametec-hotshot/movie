@@ -96,7 +96,7 @@ const TraktAuth = {
                             traktUserId = profile.username || null;
                         }
                     } catch(e) { console.warn('[Trakt] Could not fetch profile for Supabase:', e); }
-                    TraktConnectionSync.saveTraktTokens(data.access_token, data.refresh_token, traktUserId);
+                    await TraktConnectionSync.saveTraktTokens(data.access_token, data.refresh_token, traktUserId);
                 }
 
                 // Clean URL
