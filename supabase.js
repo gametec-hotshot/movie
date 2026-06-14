@@ -254,6 +254,81 @@ const SupabaseSync = {
     }
 };
 
+// Trakt Connection Sync — Persist Trakt OAuth tokens in Supabase
+const TraktConnectionSync = {
+    async saveTraktTokens(accessToken, refreshToken, traktUserId = null) {
+        const user = await SupabaseAuth.getUser();
+        if (!user || !supabaseClient) return;
+
+        try {
+            await supabaseClient.from('trakt_connections').upsert({
+                user_id: user.id,
+                trakt_user_id: traktUserId,
+                access_token: accessToken,
+                refresh_token: refreshToken
+            }, { onConflict: 'user_id' });
+            console.log('[Supabase] Trakt tokens saved to cloud');
+        } catch (e) {
+            console.warn('[Supabase] Could not save Trakt tokens:', e);
+        }
+    },
+
+    async loadTraktTokens() {
+        const user = await SupabaseAuth.getUser();
+        if (!user || !supabaseClient) return false;
+
+        // Don't override if Trakt is already connected locally
+        if (localStorage.getItem('trakt_access_token')) return false;
+
+        try {
+            const { data } = await supabaseClient
+                .from('trakt_connections')
+                .select('access_token, refresh_token')
+                .eq('user_id', user.id)
+                .single();
+
+            if (data && data.access_token) {
+                localStorage.setItem('trakt_access_token', data.access_token);
+                localStorage.setItem('trakt_refresh_token', data.refresh_token);
+                // Force a token refresh on first API call to get fresh metadata
+                localStorage.setItem('trakt_token_created_at', '0');
+                localStorage.setItem('trakt_token_expires_in', '1');
+                console.log('[Supabase] Trakt tokens restored from cloud');
+                return true;
+            }
+        } catch (e) {
+            console.warn('[Supabase] Could not load Trakt tokens:', e);
+        }
+        return false;
+    },
+
+    async clearTraktTokens() {
+        const user = await SupabaseAuth.getUser();
+        if (!user || !supabaseClient) return;
+
+        try {
+            await supabaseClient.from('trakt_connections').delete().match({ user_id: user.id });
+            console.log('[Supabase] Trakt tokens cleared from cloud');
+        } catch (e) {
+            console.warn('[Supabase] Could not clear Trakt tokens:', e);
+        }
+    },
+
+    async updateTraktTokens(accessToken, refreshToken) {
+        const user = await SupabaseAuth.getUser();
+        if (!user || !supabaseClient) return;
+
+        try {
+            await supabaseClient.from('trakt_connections').update({
+                access_token: accessToken,
+                refresh_token: refreshToken
+            }).eq('user_id', user.id);
+        } catch (e) {
+            console.warn('[Supabase] Could not update Trakt tokens:', e);
+        }
+    }
+};
+
 // UI and DOM Logic
 async function initSupabaseUI() {
     const accountToggleBtn = document.getElementById('account-toggle-btn');
@@ -359,6 +434,9 @@ async function initSupabaseUI() {
                     await SupabaseSync.pullAllFromCloud();
                     await SupabaseSync.syncAllToCloud();
 
+                    // Auto-restore Trakt tokens from Supabase before reload
+                    await TraktConnectionSync.loadTraktTokens();
+
                     // Refresh the page so UI renders the merged data
                     window.location.reload();
                 }
@@ -407,7 +485,19 @@ async function initSupabaseUI() {
     }
 
     // Initial Check
-    updateUIState();
+    await updateUIState();
+
+    // Auto-restore Trakt tokens from Supabase on page load
+    // If user is signed into Supabase but Trakt is not connected, try to pull tokens
+    const currentUser = await SupabaseAuth.getUser();
+    if (currentUser && !localStorage.getItem('trakt_access_token')) {
+        const restored = await TraktConnectionSync.loadTraktTokens();
+        if (restored) {
+            // Reload so Trakt UI initializes with the restored tokens
+            window.location.reload();
+            return;
+        }
+    }
 }
 
 if (document.readyState === 'loading') {
@@ -418,3 +508,4 @@ if (document.readyState === 'loading') {
 
 window.SupabaseAuth = SupabaseAuth;
 window.supabaseClient = supabaseClient;
+window.TraktConnectionSync = TraktConnectionSync;

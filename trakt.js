@@ -80,6 +80,25 @@ const TraktAuth = {
                 localStorage.setItem('trakt_token_created_at', data.created_at);
                 localStorage.setItem('trakt_token_expires_in', data.expires_in);
                 
+                // Save tokens to Supabase for cross-device sync
+                if (typeof TraktConnectionSync !== 'undefined') {
+                    let traktUserId = null;
+                    try {
+                        const profileRes = await fetch(`${TRAKT_API_URL}/users/me`, {
+                            headers: {
+                                'Authorization': `Bearer ${data.access_token}`,
+                                'trakt-api-version': '2',
+                                'trakt-api-key': TRAKT_CLIENT_ID
+                            }
+                        });
+                        if (profileRes.ok) {
+                            const profile = await profileRes.json();
+                            traktUserId = profile.username || null;
+                        }
+                    } catch(e) { console.warn('[Trakt] Could not fetch profile for Supabase:', e); }
+                    TraktConnectionSync.saveTraktTokens(data.access_token, data.refresh_token, traktUserId);
+                }
+
                 // Clean URL
                 window.history.replaceState({}, document.title, this.getRedirectUri());
                 return true;
@@ -94,7 +113,11 @@ const TraktAuth = {
         return !!localStorage.getItem('trakt_access_token');
     },
 
-    logout() {
+    async logout() {
+        // Clear from Supabase first (cross-device disconnect)
+        if (typeof TraktConnectionSync !== 'undefined') {
+            try { await TraktConnectionSync.clearTraktTokens(); } catch(e) {}
+        }
         localStorage.removeItem('trakt_access_token');
         localStorage.removeItem('trakt_refresh_token');
         localStorage.removeItem('trakt_token_created_at');
@@ -142,6 +165,12 @@ const TraktAuth = {
                 localStorage.setItem('trakt_refresh_token', data.refresh_token);
                 localStorage.setItem('trakt_token_created_at', data.created_at);
                 localStorage.setItem('trakt_token_expires_in', data.expires_in);
+                
+                // Keep Supabase in sync with refreshed tokens
+                if (typeof TraktConnectionSync !== 'undefined') {
+                    TraktConnectionSync.updateTraktTokens(data.access_token, data.refresh_token);
+                }
+                
                 return data.access_token;
             }
         } catch (e) {
