@@ -1,5 +1,5 @@
 /**
- * Prisma Service Worker v2.2
+ * Prisma Service Worker v2.5
  *
  * Strategy:
  * - NAVIGATE requests (page loads): Network-First → fallback to cache.
@@ -14,7 +14,7 @@
  *   Never intercepted — must always come fresh from the network.
  */
 
-const CACHE_NAME = 'prisma-shell-v2.4';
+const CACHE_NAME = 'prisma-shell-v2.5';
 
 const STATIC_ASSETS = [
   './logo.png',

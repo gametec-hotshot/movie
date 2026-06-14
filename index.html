@@ -14,7 +14,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" href="logo.png">
-  <meta name="version" content="2.3">
+  <meta name="version" content="2.5">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -557,9 +557,10 @@
       margin: -20px -10px;
       /* iOS FIX: overscroll-behavior-x:contain stops horizontal scroll from
          bubbling up to the page and triggering back/forward navigation.
-         touch-action:pan-x ensures only horizontal swipes are handled here. */
+         pan-x pan-y: handles horizontal row swipes AND passes vertical
+         swipes through to the page so the user can always scroll up/down. */
       overscroll-behavior-x: contain;
-      touch-action: pan-x;
+      touch-action: pan-x pan-y;
     }
 
     .row-posters::-webkit-scrollbar {
@@ -3366,7 +3367,7 @@
   <footer class="site-footer">
     <p>&copy; 2026 Prisma Streaming. Built for seamless entertainment.</p>
     <p><a href="javascript:void(0)" onclick="showLegal('tos')">Terms of Service</a> | <a href="javascript:void(0)"
-        onclick="showLegal('privacy')">Privacy Policy</a> | <span class="version-tag">2.3</span></p>
+        onclick="showLegal('privacy')">Privacy Policy</a> | <span class="version-tag">v2.5</span></p>
   </footer>
 
   <div class="modal" id="app-info-modal">
@@ -3375,21 +3376,18 @@
       <button class="close-btn" id="close-app-info"
         style="top: 10px; right: 10px; width: 40px; height: 40px; font-size: 24px;">&times;</button>
       <div style="text-align: center; margin-bottom: 25px;">
-        <h2 style="color: #fff; margin-bottom: 5px;">Prisma <span style="color: var(--primary-color);">2.3</span></h2>
+        <h2 style="color: #fff; margin-bottom: 5px;">Prisma <span style="color: var(--primary-color);">v2.5</span></h2>
         <p style="color: #aaa; font-size: 0.9rem;">Built for seamless entertainment.</p>
       </div>
       <div
         style="text-align: left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; margin-bottom: 25px;">
-        <h3 style="color: #fff; margin-bottom: 10px; font-size: 1.1rem;">What's New in 2.3</h3>
+        <h3 style="color: #fff; margin-bottom: 10px; font-size: 1.1rem;">What's New in v2.5</h3>
         <ul style="color: #ccc; font-size: 0.9rem; line-height: 1.6; padding-left: 20px;">
-          <li><strong>Auto-Repair Protocol:</strong> Trakt Sync automatically repairs missing movie posters and corrects
-            Watchlist bugs from imported items.</li>
-          <li><strong>Trakt.tv Integration:</strong> Two-way sync with Trakt.tv to automatically track your watch
-            history in the cloud.</li>
-          <li><strong>Cinematic Background Trailers:</strong> Seamlessly auto-playing trailers for movies and TV shows
-            (including Anime) that fade out smoothly as you scroll.</li>
-          <li><strong>Premium Trailer UI:</strong> Added a sleek mute/unmute button and perfectly tuned shadow gradients
-            to enhance text readability while showcasing the video.</li>
+          <li><strong>Supabase Cloud Sync:</strong> Your Watchlist and Continue Watching now sync across all your devices automatically.</li>
+          <li><strong>Account System:</strong> Sign Up / Sign In with email. Your data follows you everywhere.</li>
+          <li><strong>Smart Poster Recovery:</strong> Missing posters auto-fetch from TMDB on any device, even with no local cache.</li>
+          <li><strong>Mobile Scroll Fix:</strong> Vertical page scrolling now works smoothly even when your finger starts on a card row.</li>
+          <li><strong>Developer Tools Tab:</strong> Advanced sync status and cache inspection panel in Settings.</li>
         </ul>
       </div>
       <div style="text-align: center;">
@@ -4967,11 +4965,34 @@
       return getWatchlist().some(item => item.id == id);
     }
 
-    function renderContinueWatching() {
+    async function renderContinueWatching() {
       const cwRaw = getContinueWatching();
-      const cwItems = cwRaw.map(id => getProgressForId(id)).filter(item => item !== null);
+      let cwItems = cwRaw.map(id => getProgressForId(id)).filter(item => item !== null);
       if (cwItems.length === 0) return;
       cwItems.sort((a, b) => b.updatedAt - a.updatedAt);
+
+      // For any item missing a poster, fetch it from TMDB now and cache it
+      const missingPosterItems = cwItems.filter(item => !item.poster && !item.poster_path);
+      if (missingPosterItems.length > 0) {
+        await Promise.all(missingPosterItems.map(async (item) => {
+          try {
+            const type = item.mediaType || item.type || 'movie';
+            const meta = await fetchApi(`/${type}/${item.id}?api_key=${TMDB_API_KEY}`);
+            if (meta && meta.poster_path) {
+              item.poster_path = meta.poster_path;
+              item.poster = `${IMG_URL}${meta.poster_path}`;
+              item.title = item.title || meta.title || meta.name;
+              // Save back to localStorage so next load is instant
+              const key = `progress_${item.id}`;
+              try {
+                const existing = JSON.parse(localStorage.getItem(key) || '{}');
+                localStorage.setItem(key, JSON.stringify({ ...existing, ...item }));
+              } catch(e) {}
+            }
+          } catch(e) {}
+        }));
+      }
+
       createRow("Continue Watching", cwItems.map(item => {
         // Safely resolve poster: locally-saved items use 'poster' (full URL),
         // Trakt-imported items may only have 'poster_path' (relative path)

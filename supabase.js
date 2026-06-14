@@ -1,3 +1,4 @@
+// supabase.js — Prisma v2.5
 // Supabase Client Initialization
 const SUPABASE_URL = 'https://bjomxfjqqyhxmgjptesi.supabase.co'; // Provided from user dashboard
 const SUPABASE_ANON_KEY = 'sb_publishable_CPS37TO2Y9iHbFBQNNan5Q_V2GJjg4A'; // Provided by user
