@@ -3339,6 +3339,14 @@ window.channelLogosPromise = fetch(window.getRootPath() + 'js/logos.json')
       playerIframe.setAttribute('data-season', season);
       playerIframe.setAttribute('data-episode', episode);
       playerIframe.setAttribute('data-type', type);
+      
+      // Dynamic Referrer Policy for VixSrc block bypass
+      if (server === 'vixsrc') {
+        playerIframe.setAttribute('referrerpolicy', 'no-referrer');
+      } else {
+        playerIframe.setAttribute('referrerpolicy', 'origin');
+      }
+
       playerIframe.src = src;
 
       // Clear any existing fallback timer
