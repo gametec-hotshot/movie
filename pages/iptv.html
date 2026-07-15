@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="description" content="Prisma - A premium streaming interface for movies and TV shows.">
+  <meta name="keywords" content="movies, tv shows, streaming, prisma">
+  <title>Prisma - Stream Movies & TV Shows</title>
+  <meta name="theme-color" content="#141414">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Prisma">
+  <link rel="manifest" href="../manifest.json">
+  <link rel="icon" type="image/png" href="../assets/logo.png">
+  <link rel="apple-touch-icon" href="../assets/logo.png">
+
+  <meta name="version" content="2.20">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <script>window.isAdBlockScriptLoaded = false;</script>
+  <script src="../js/advertisement.js?v=20" onerror="window.isAdBlockScriptLoaded = false;"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;600;700;800&display=swap">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;600;700;800&display=swap"
+    rel="stylesheet">
+  <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css?v=20">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-BS7P8359WH"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-BS7P8359WH');
+  </script>
+</head>
+
+<body>
+
+  <nav id="navbar">
+    <button id="mobile-menu-btn" class="mobile-menu-btn" style="display: none;" title="Menu">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" viewBox="0 0 24 24">
+        <path d="M3 12h18M3 6h18M3 18h18"></path>
+      </svg>
+    </button>
+    <a href="#" class="logo" id="home-link">Prisma</a>
+    <ul class="nav-links">
+      <li>Home</li>
+      <li>Movies</li>
+      <li>TV</li>
+      <li>Anime</li>
+      <li>Live Sports</li>
+      <li class="active">IPTV</li>
+      <li>My List</li>
+    </ul>
+    <div class="search-container">
+      <input type="search" class="search-input" id="search-input" placeholder="Titles, people, genres"
+        autocomplete="off" name="movie-search">
+      <button id="clear-search-btn" class="clear-search-btn" title="Clear search">✕</button>
+    </div>
+    <div class="account-icon-container"
+      style="position: relative; margin-right: 15px; display: flex; align-items: center;">
+      <button class="account-btn" id="account-toggle-btn" title="Account"
+        style="background:none; border:none; color:#fff; cursor:pointer; padding: 5px; transition: transform 0.2s; z-index:1002; position:relative;"
+        onclick="(function(btn){var d=document.getElementById('account-dropdown');if(!d)return;var isActive=d.classList.contains('active');if(isActive){d.classList.remove('active');}else{d.classList.add('active');function closeOnOutside(e){if(!d.contains(e.target)&&e.target!==btn){d.classList.remove('active');document.removeEventListener('click',closeOnOutside,true);}}setTimeout(function(){document.addEventListener('click',closeOnOutside,true);},0);}})(this)">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" viewBox="0 0 24 24">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </button>
+      <div class="settings-dropdown" id="account-dropdown"
+        style="position: absolute; top: 40px; right: 0; background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; min-width: 200px; padding: 10px; z-index: 1001; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+
+        <div style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 5px;">
+          <div style="font-size: 0.8rem; color: #aaa; margin-bottom: 5px;">Supabase Sync</div>
+          <div style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem;">
+            <div id="supabase-status-dot"
+              style="width: 8px; height: 8px; border-radius: 50%; background: #ff4444; box-shadow: 0 0 8px rgba(255, 68, 68, 0.6);">
+            </div>
+            <span id="supabase-status-text" style="font-weight: 600;">Not Signed In</span>
+          </div>
+          <div id="supabase-email-display"
+            style="font-size: 0.75rem; color: #888; margin-top: 6px; display: none; word-break: break-all;"></div>
+        </div>
+
+        <div class="settings-dropdown-item" id="nav-signin-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+            <polyline points="10 17 15 12 10 7"></polyline>
+            <line x1="15" y1="12" x2="3" y2="12"></line>
+          </svg>
+          <span>Sign In / Sign Up</span>
+        </div>
+
+        <div class="settings-dropdown-item" id="nav-signout-btn" style="display: none; color: #ff4444;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          <span>Sign Out</span>
+        </div>
+      </div>
+    </div>
+    <div class="settings-icon-container">
+      <button class="settings-btn" id="settings-toggle-btn" title="Settings">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path
+            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+          </path>
+        </svg>
+      </button>
+      <div class="settings-dropdown" id="settings-dropdown">
+        <div class="settings-dropdown-item" id="open-cache-settings">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" viewBox="0 0 24 24">
+            <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+          </svg>
+          <span>Cache Settings</span>
+        </div>
+        <div class="settings-dropdown-item" id="toggle-sandbox-btn">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" viewBox="0 0 24 24">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
+          <span style="flex: 1;">Disable Sandbox</span>
+          <div class="toggle-switch" id="sandbox-toggle-switch"></div>
+        </div>
+        <div class="settings-dropdown-item" id="toggle-autoplay-btn">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" viewBox="0 0 24 24">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          <span style="flex: 1;">Autoplay Next</span>
+          <div class="toggle-switch" id="autoplay-toggle-switch"></div>
+        </div>
+        <div class="settings-dropdown-item" id="open-server-test-btn">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" viewBox="0 0 24 24">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+          <span>Server Test</span>
+        </div>
+        <div class="settings-dropdown-item" id="open-app-info-btn">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span>App Info</span>
+        </div>
+        <div class="settings-dropdown-item" id="trakt-login-btn" style="justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" viewBox="0 0 24 24">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+            <span id="trakt-login-text">Connect Trakt</span>
+          </div>
+          <div id="trakt-status-container" class="trakt-status-container">
+            <div style="position: relative; width: 10px; height: 10px; flex-shrink: 0;">
+              <div class="trakt-status-ping"></div>
+              <div class="trakt-status-dot"></div>
+            </div>
+            <div class="trakt-status-info" id="trakt-status-info"
+              style="display: none; position: relative; cursor: help;">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" viewBox="0 0 24 24" style="opacity: 0.6;">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <div class="trakt-status-tooltip" id="trakt-status-tooltip"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Auth Modal -->
+  <div class="modal" id="auth-modal"
+    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); z-index: 2000; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease;">
+    <div class="modal-content"
+      style="background: rgba(20,20,20,0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 30px; width: 90%; max-width: 400px; position: relative; transform: translateY(20px); transition: transform 0.3s ease; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+      <button class="close-modal" id="close-auth-modal"
+        style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; transition: color 0.2s;">&times;</button>
+      <h2 style="font-family: var(--heading-font); margin-bottom: 5px; text-align: center; font-size: 1.8rem;"
+        id="auth-modal-title">Sign In</h2>
+      <p style="color: #aaa; text-align: center; margin-bottom: 25px; font-size: 0.9rem;">Sync your Watchlist and
+        Progress across devices</p>
+
+      <form onsubmit="return false;" autocomplete="off" style="display: flex; flex-direction: column; gap: 15px;">
+        <input type="email" id="auth-email" placeholder="Email Address" autocomplete="off"
+          style="padding: 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff; font-size: 16px; outline: none; transition: border-color 0.2s;">
+        <input type="password" id="auth-password" placeholder="Password" autocomplete="off"
+          style="padding: 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff; font-size: 16px; outline: none; transition: border-color 0.2s;">
+
+        <div id="auth-error"
+          style="color: #ff4444; font-size: 0.9rem; text-align: center; display: none; background: rgba(255,68,68,0.1); padding: 10px; border-radius: 6px;">
+        </div>
+
+        <button id="auth-submit-btn" type="button" class="btn btn-play"
+          style="width: 100%; justify-content: center; margin-top: 10px; font-size: 1.1rem; padding: 14px;">Sign
+          In</button>
+
+        <div style="text-align: center; font-size: 0.9rem; color: #aaa; margin-top: 15px;">
+          <span id="auth-switch-text">Don't have an account?</span>
+          <a href="#" id="auth-switch-btn"
+            style="color: var(--primary-color); text-decoration: none; font-weight: bold; margin-left: 5px;">Sign Up</a>
+        </div>
+
+        <div
+          style="display: flex; align-items: flex-start; gap: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; margin-top: 15px; font-size: 0.8rem; color: #aaa; text-align: left; line-height: 1.4;">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" viewBox="0 0 24 24" style="flex-shrink: 0; margin-top: 2px;">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <div>
+            If sign-up doesn't work, it is temporarily disabled due to bot activity. Please contact the developer for an
+            invite link.
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="search-results" id="search-results-container">
+    <div class="grid-header">
+      <h2 class="row-title" style="margin-bottom: 0;"><span id="search-query-display"></span></h2>
+      <select id="grid-filter" class="grid-filter-select hidden">
+        <option value="popular">Most Popular</option>
+        <option value="top_rated">Top Rated</option>
+        <option value="trending">Trending Now</option>
+        <option value="upcoming">New Releases</option>
+      </select>
+      <select id="genre-filter" class="grid-filter-select hidden">
+        <option value="">All Genres</option>
+      </select>
+    </div>
+    <div class="search-grid" id="search-grid"></div>
+    <div class="loader" id="grid-loader">
+      <div class="spinner"></div>
+    </div>
+    <div class="scroll-sentinel" id="scroll-sentinel"></div>
+  </div>
+
+  <div class="search-results" id="sports-container" style="display: none;">
+    <!-- Ads Disclaimer Banner -->
+    <div
+      style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); padding: 16px 24px; border-radius: 16px; margin-bottom: 25px; display: flex; align-items: center; gap: 20px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);">
+      <div
+        style="width: 40px; height: 40px; border-radius: 50%; background: rgba(229, 9, 20, 0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e50914" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <div>
+        <h4 style="margin: 0 0 4px 0; color: #fff; font-size: 0.95rem; font-weight: 600; letter-spacing: 0.5px;">A note
+          about third-party streams</h4>
+        <p style="margin: 0; color: rgba(255, 255, 255, 0.6); font-size: 0.85rem; line-height: 1.5;">
+          These sports streams come from third-party servers, which means you might see some pop-up ads from the
+          streamers. Since this is a personal, unfunded project, I can't control what those servers show right now.
+          However, I promise I'm actively working on a completely ad-free solution for the future. Thanks for bearing
+          with me, and enjoy the games!
+        </p>
+      </div>
+    </div>
+
+    <div class="sports-tabs-container" r"
+      style="display: flex; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+      <button id="tab-channels" class="sports-tab active" onclick="switchSportsTab('channels')"
+        style="background: transparent; border: none; color: #fff; font-size: 1.2rem; font-weight: bold; cursor: pointer; padding: 5px 10px; border-bottom: 2px solid #e50914;">24/7
+        Channels</button>
+      <div class="sports-dropdown" style="position: relative; display: inline-block;">
+        <button id="tab-live-matches-group" class="sports-tab" onclick="toggleSportsDropdown(event)"
+          style="background: transparent; border: none; color: #888; font-size: 1.2rem; font-weight: bold; cursor: pointer; padding: 5px 10px; border-bottom: 2px solid transparent; display: flex; align-items: center; gap: 5px;">
+          Live Matches
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+
+        <div id="sports-dropdown-menu"
+          style="display: none; position: absolute; top: 100%; left: 0; background: #141414; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; min-width: 180px; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; margin-top: 5px;">
+          <div class="dropdown-item" onclick="switchSportsTab('matches')"
+            style="padding: 12px 16px; color: #fff; cursor: pointer; transition: 0.2s; border-bottom: 1px solid rgba(255,255,255,0.05);"
+            onmouseover="this.style.background='rgba(229,9,20,0.1)'" onmouseout="this.style.background='transparent'">
+            Server 1 (Streamed.pk)
+          </div>
+          <div class="dropdown-item" onclick="switchSportsTab('esportex')"
+            style="padding: 12px 16px; color: #fff; cursor: pointer; transition: 0.2s; border-bottom: 1px solid rgba(255,255,255,0.05);"
+            onmouseover="this.style.background='rgba(229,9,20,0.1)'" onmouseout="this.style.background='transparent'">
+            Server 2 (Esportex)
+          </div>
+          <div class="dropdown-item" onclick="switchSportsTab('streamfree')"
+            style="padding: 12px 16px; color: #fff; cursor: pointer; transition: 0.2s; border-bottom: 1px solid rgba(255,255,255,0.05);"
+            onmouseover="this.style.background='rgba(229,9,20,0.1)'" onmouseout="this.style.background='transparent'">
+            Server 3 (StreamFree)
+          </div>
+          <div class="dropdown-item" onclick="switchSportsTab('watchfooty')"
+            style="padding: 12px 16px; color: #fff; cursor: pointer; transition: 0.2s;"
+            onmouseover="this.style.background='rgba(229,9,20,0.1)'" onmouseout="this.style.background='transparent'">
+            Server 4 (WatchFooty)
+          </div>
+        </div>
+      </div>
+      <button id="tab-match-stats" class="sports-tab" onclick="switchSportsTab('match-stats')"
+        style="background: transparent; border: none; color: #888; font-size: 1.2rem; font-weight: bold; cursor: pointer; padding: 5px 10px; border-bottom: 2px solid transparent;">Match Stats</button>
+    </div>
+
+    <!-- Match Stats View -->
+    <div id="sports-match-stats-view" style="display: none; padding-bottom: 40px; margin-top: 15px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 20px; gap: 15px;">
+        <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+          <h2 style="margin: 0; font-size: 1.5rem; color: #fff;">Match Statistics</h2>
+          <select id="match-stats-sport-filter" onchange="window.applyMatchStatsFilters()"
+            style="background: #2a2a2a; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 15px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; outline: none;">
+            <option value="All">All Sports</option>
+          </select>
+          <select id="match-stats-sort-filter" onchange="window.applyMatchStatsFilters()"
+            style="background: #2a2a2a; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 15px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; outline: none;">
+            <option value="time">Sort by Time</option>
+            <option value="live">Live First</option>
+          </select>
+        </div>
+        <div style="display: flex; background: #2a2a2a; border-radius: 8px; padding: 3px; border: 1px solid rgba(255,255,255,0.1);">
+          <button id="stats-time-12h" onclick="window.fetchMatchStatsRange(12)" style="background: rgba(229,9,20,0.8); border: none; color: #fff; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s;">12h</button>
+          <button id="stats-time-24h" onclick="window.fetchMatchStatsRange(24)" style="background: transparent; border: none; color: #aaa; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s;">24h</button>
+          <button id="stats-time-48h" onclick="window.fetchMatchStatsRange(48)" style="background: transparent; border: none; color: #aaa; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s;">48h</button>
+        </div>
+      </div>
+      <div id="match-stats-container"></div>
+    </div>
+
+    <!-- Esportex View -->
+    <div id="sports-esportex-view" style="display: none; padding-bottom: 40px;"></div>
+
+    <!-- Server 3 StreamFree View -->
+    <div id="sports-streamfree-view" style="display: none; padding-bottom: 40px; margin-top: 15px;">
+      <div class="grid-header"
+        style="justify-content: flex-start; gap: 20px; align-items: center; flex-wrap: wrap; margin-bottom: 20px;">
+        <div style="display: flex; flex-direction: column; margin-right: 15px;">
+          <span
+            style="color: #e50914; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;">Currently
+            Viewing</span>
+          <h2 style="margin: 0; font-size: 1.4rem; color: #fff;">Server 3 <span
+              style="color: #888; font-size: 1rem; font-weight: normal;">(StreamFree)</span></h2>
+        </div>
+        <p id="streamfree-status" class="status-text" style="color: #aaa; font-size: 0.9rem; margin: 0;">Fetching live
+          streams...</p>
+      </div>
+      <div id="streamfree-filters" class="sport-filters"
+        style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px;"></div>
+      <div id="streamfree-events-container" class="content-scroll"></div>
+      <div id="streamfree-loading" class="loader">
+        <div class="spinner"></div>
+      </div>
+      <div id="streamfree-error" class="hidden" style="text-align: center; color: #aaa; margin-top: 50px;">
+        <h3 id="streamfree-error-title" style="color:#fff;margin-bottom:8px;">No streams found</h3>
+        <p id="streamfree-error-message">Could not fetch streams.</p>
+      </div>
+    </div>
+
+    <!-- Server 4 WatchFooty View -->
+    <div id="sports-watchfooty-view" style="display: none; padding-bottom: 40px; margin-top: 15px;">
+      <div class="grid-header"
+        style="justify-content: flex-start; gap: 20px; align-items: center; flex-wrap: wrap; margin-bottom: 20px;">
+        <div style="display: flex; flex-direction: column; margin-right: 15px;">
+          <span
+            style="color: #e50914; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;">Currently
+            Viewing</span>
+          <h2 style="margin: 0; font-size: 1.4rem; color: #fff;">Server 4 <span
+              style="color: #888; font-size: 1rem; font-weight: normal;">(WatchFooty)</span></h2>
+        </div>
+        <p id="watchfooty-status" class="status-text" style="color: #aaa; font-size: 0.9rem; margin: 0;">Fetching live
+          streams...</p>
+      </div>
+      <div id="watchfooty-filters" class="sport-filters"
+        style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px;"></div>
+      <div id="watchfooty-events-container" class="content-scroll"></div>
+      <div id="watchfooty-loading" class="loader">
+        <div class="spinner"></div>
+      </div>
+      <div id="watchfooty-error" class="hidden" style="text-align: center; color: #aaa; margin-top: 50px;">
+        <h3 id="watchfooty-error-title" style="color:#fff;margin-bottom:8px;">No streams found</h3>
+        <p id="watchfooty-error-message">Could not fetch streams.</p>
+      </div>
+    </div>
+
+    <!-- Server 3 StreamFree View -->
+    <div id="sports-streamfree-view" style="display: none; padding-bottom: 40px; margin-top: 15px;">
+      <div class="grid-header"
+        style="justify-content: flex-start; gap: 20px; align-items: center; flex-wrap: wrap; margin-bottom: 20px;">
+        <div style="display: flex; flex-direction: column; margin-right: 15px;">
+          <span
+            style="color: #e50914; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;">Currently
+            Viewing</span>
+          <h2 style="margin: 0; font-size: 1.4rem; color: #fff;">Server 3 <span
+              style="color: #888; font-size: 1rem; font-weight: normal;">(StreamFree)</span></h2>
+        </div>
+        <select id="streamfree-filter-select" class="grid-filter-select"
+          style="display: block; width: auto; max-width: 100%;">
+          <option value="All">All Sports</option>
+        </select>
+        <div style="display: flex; align-items: center; gap: 10px; margin-left: auto;">
+          <p id="streamfree-status" class="status-text" style="color: #aaa; font-size: 0.9rem; margin: 0;">Fetching live
+            streams...</p>
+          <span style="color: #aaa; font-size: 0.9rem; font-weight: bold; margin-left: 10px;">12-Hour</span>
+          <div class="toggle-switch" id="streamfree-time-format-toggle" onclick="toggleSportsTimeFormat()"></div>
+        </div>
+      </div>
+      <div id="streamfree-events-container" class="content-scroll"></div>
+      <div id="streamfree-loading" class="loader">
+        <div class="spinner"></div>
+      </div>
+      <div id="streamfree-error" class="hidden" style="text-align: center; color: #aaa; margin-top: 50px;">
+        <h3 id="streamfree-error-title" style="color:#fff;margin-bottom:8px;">No streams found</h3>
+        <p id="streamfree-error-message">Could not fetch streams.</p>
+      </div>
+    </div>
+
+    <!-- Server 4 WatchFooty View -->
+    <div id="sports-watchfooty-view" style="display: none; padding-bottom: 40px; margin-top: 15px;">
+      <div class="grid-header"
+        style="justify-content: flex-start; gap: 20px; align-items: center; flex-wrap: wrap; margin-bottom: 20px;">
+        <div style="display: flex; flex-direction: column; margin-right: 15px;">
+          <span
+            style="color: #e50914; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;">Currently
+            Viewing</span>
+          <h2 style="margin: 0; font-size: 1.4rem; color: #fff;">Server 4 <span
+              style="color: #888; font-size: 1rem; font-weight: normal;">(WatchFooty)</span></h2>
+        </div>
+        <select id="watchfooty-filter-select" class="grid-filter-select"
+          style="display: block; width: auto; max-width: 100%;">
+          <option value="All">All Sports</option>
+        </select>
+        <div style="display: flex; align-items: center; gap: 10px; margin-left: auto;">
+          <p id="watchfooty-status" class="status-text" style="color: #aaa; font-size: 0.9rem; margin: 0;">Fetching live
+            streams...</p>
+          <span style="color: #aaa; font-size: 0.9rem; font-weight: bold; margin-left: 10px;">12-Hour</span>
+          <div class="toggle-switch" id="watchfooty-time-format-toggle" onclick="toggleSportsTimeFormat()"></div>
+        </div>
+      </div>
+      <div id="watchfooty-events-container" class="content-scroll"></div>
+      <div id="watchfooty-loading" class="loader">
+        <div class="spinner"></div>
+      </div>
+      <div id="watchfooty-error" class="hidden" style="text-align: center; color: #aaa; margin-top: 50px;">
+        <h3 id="watchfooty-error-title" style="color:#fff;margin-bottom:8px;">No streams found</h3>
+        <p id="watchfooty-error-message">Could not fetch streams.</p>
+      </div>
+    </div>
+
+    <!-- Channels View (CDNLivetv Hub) -->
+    <div id="sports-channels-view">
+      <!-- CDNLivetv Sub-Navigation -->
+      <div class="cdn-sub-nav" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+        <button id="cdn-tab-channels" class="cdn-tab active" onclick="switchCdnTab('channels')"
+          style="background: rgba(229, 9, 20, 0.2); border: 1px solid #e50914; color: #fff; padding: 8px 16px; border-radius: 20px; font-weight: 600; cursor: pointer; transition: 0.3s; font-size: 0.9rem;">24/7
+          Channels</button>
+        <button id="cdn-tab-events" class="cdn-tab" onclick="switchCdnTab('events')"
+          style="background: rgba(255, 255, 255, 0.05); border: 1px solid transparent; color: #aaa; padding: 8px 16px; border-radius: 20px; font-weight: 600; cursor: pointer; transition: 0.3s; font-size: 0.9rem;">Live
+          Events</button>
+      </div>
+
+      <!-- CDNLivetv Sports Events View -->
+      <div id="cdn-events-view" style="display: none;">
+        <div class="search-grid" id="cdn-events-grid"
+          style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px;"></div>
+        <div class="loader" id="cdn-events-loader" style="display: none;">
+          <div class="spinner"></div>
+        </div>
+        <div id="cdn-events-empty-msg" style="display: none; text-align: center; color: #aaa; margin-top: 50px;">No live
+          events right now.</div>
+      </div>
+
+      <!-- CDNLivetv 24/7 Channels View -->
+      <div id="cdn-channels-view">
+        <!-- Country Pills Container -->
+        <div id="country-pills-container"
+          style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 15px; scrollbar-width: none; -ms-overflow-style: none;">
+          <style>
+            #country-pills-container::-webkit-scrollbar {
+              display: none;
+            }
+          </style>
+          <!-- Country pills injected via JS -->
+        </div>
+        <div class="search-grid" id="channels-grid"
+          style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px;"></div>
+        <div class="loader" id="channels-loader" style="display: none;">
+          <div class="spinner"></div>
+        </div>
+        <div id="channels-empty-msg" style="display: none; text-align: center; color: #aaa; margin-top: 50px;">No
+          channels available right now.</div>
+      </div>
+    </div>
+
+    <!-- Matches View -->
+    <div id="sports-matches-view" style="display: none;">
+      <div class="grid-header" style="justify-content: flex-start; gap: 20px; align-items: center; flex-wrap: wrap;">
+        <div style="display: flex; flex-direction: column; margin-right: 15px;">
+          <span
+            style="color: #e50914; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;">Currently
+            Viewing</span>
+          <h2 style="margin: 0; font-size: 1.4rem; color: #fff;">Server 1 <span
+              style="color: #888; font-size: 1rem; font-weight: normal;">(Streamed.pk)</span></h2>
+        </div>
+        <select id="sports-category-filter" class="grid-filter-select" onchange="fetchStreamedMatches(this.value)"
+          style="display: block; width: auto; max-width: 100%;">
+          <option value="football">Football</option>
+        </select>
+      </div>
+      <div class="search-grid" id="sports-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+      </div>
+      <div class="loader" id="sports-loader">
+        <div class="spinner"></div>
+      </div>
+      <div id="sports-empty-msg" style="display: none; text-align: center; color: #aaa; margin-top: 50px;">No live
+        events found right now.</div>
+    </div>
+  </div>
+
+  <!-- Stream Selector Modal -->
+  <div id="stream-selector-modal"
+    style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+    <div
+      style="background: #141414; border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; max-height: 80dvh; overflow-y: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0; font-size: 1.5rem;">Select a Stream</h2>
+        <button onclick="document.getElementById('stream-selector-modal').style.display='none'"
+          style="background: none; border: none; color: #aaa; font-size: 1.5rem; cursor: pointer;">✕</button>
+      </div>
+      <p style="color: #aaa; font-size: 0.9rem; margin-bottom: 20px;">If a stream buffers or pauses on iOS, try
+        selecting a different server.</p>
+      <div id="stream-selector-list" style="display: flex; flex-direction: column; gap: 10px;">
+        <!-- Streams go here -->
+      </div>
+    </div>
+  </div>
+
+  <div id="cache-settings-view" class="cache-settings-page hidden">
+    <div class="cache-header">
+      <div class="cache-header-left">
+        <button class="settings-btn" id="close-cache-settings" style="width: 36px; height: 36px;">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" viewBox="0 0 24 24">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+        <h1 class="cache-title">Cache & Data</h1>
+        <span class="cache-stats" id="cache-total-size">Used: 0 KB</span>
+      </div>
+      <div class="cache-actions">
+        <button class="cache-btn cache-btn-primary" id="trakt-sync-btn" title="Sync Local History to Trakt"
+          style="background: rgba(229, 9, 20, 0.2); border-color: #e50914;">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" viewBox="0 0 24 24">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
+          </svg>
+          Sync to Trakt
+        </button>
+        <input type="file" id="import-file-input" accept=".json" style="display: none;">
+        <button class="cache-btn cache-btn-primary" id="import-cache-btn" title="Import Data">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          Import
+        </button>
+        <button class="cache-btn cache-btn-primary" id="export-cache-btn" title="Export Data">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Export
+        </button>
+        <button class="cache-btn cache-btn-danger" id="master-clear-btn" title="Clear All Data">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" viewBox="0 0 24 24">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          Master Clear
+        </button>
+      </div>
+    </div>
+
+    <div class="cache-info-box">
+      <svg class="cache-info-icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+        viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+      </svg>
+      <div class="cache-info-text">
+        <strong>Data is stored locally by default.</strong> It is totally up to you if you want to use cloud sync
+        features like Supabase or Trakt. They are simply quality-of-life improvements so everything is saved in the
+        cloud across devices. Exporting and importing works perfectly fine for offline backups, and you can always use
+        this site completely offline without ever having to log in!
+      </div>
+    </div>
+
+    <div id="cache-sections-container"></div>
+  </div>
+
+  <!-- Cache Clear Modals -->
+  <div class="modal" id="cache-clear-modal">
+    <div class="modal-content-wrapper"
+      style="max-width: 400px; height: auto; padding: 30px; text-align: center; background: #1a1a1a; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;">
+      <h2 style="color: #fff; margin-bottom: 15px;" id="cache-modal-title">Clear Data?</h2>
+      <p style="color: #aaa; font-size: 0.95rem; margin-bottom: 25px;" id="cache-modal-desc">This action cannot be
+        undone.</p>
+      <div style="display: flex; gap: 15px; justify-content: center;">
+        <button class="btn btn-info" id="cache-modal-cancel" style="padding: 10px 20px;">Cancel</button>
+        <button class="btn btn-play" id="cache-modal-confirm"
+          style="padding: 10px 20px; background: #e50914; color: white; border: none;">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="main-content" style="display: none;">
+    <div class="hero" id="hero">
+      <div class="skeleton-hero" id="hero-skeleton-bg"></div>
+      <div class="hero-bg" id="hero-bg" style="opacity: 0;"></div>
+      <div class="hero-content">
+        <h1 class="hero-title skeleton-text" id="hero-title" style="min-width: 300px; min-height: 50px;"></h1>
+        <p class="hero-desc skeleton-text" id="hero-desc"
+          style="min-width: 400px; min-height: 100px; margin-bottom: 20px;"></p>
+        <div class="hero-buttons" id="hero-buttons" style="opacity: 0; pointer-events: none;">
+          <button class="btn btn-play" id="hero-play">▶ Play</button>
+          <button class="btn btn-info" id="hero-info">ⓘ More Info</button>
+        </div>
+      </div>
+      <div class="hero-controls">
+        <div class="hero-arrow" id="hero-prev">&lt;</div>
+        <div class="hero-dots" id="hero-dots"></div>
+        <div class="hero-arrow" id="hero-next">&gt;</div>
+      </div>
+    </div>
+
+    <div id="rows-container"></div>
+  </div>
+
+  <div id="details-view"></div>
+
+  <div id="server-test-view" class="hidden">
+    <div class="st-header">
+      <div class="st-header-content">
+        <h1 class="st-title">Server Latency Test</h1>
+        <p class="st-subtitle">Check the performance of all available streaming servers</p>
+      </div>
+      <div class="st-controls">
+        <div class="expert-mode-toggle" title="Enable Expert Mode for uptime metrics & sparklines">
+          <span class="expert-label">Expert Mode</span>
+          <div class="toggle-switch" id="expert-mode-switch"></div>
+        </div>
+        <select id="st-sort-select" class="st-sort-select">
+          <option value="relevant">Sort by: Relevant</option>
+          <option value="asc">Sort by: Least Ping</option>
+          <option value="desc">Sort by: Highest Ping</option>
+        </select>
+        <button class="st-master-ping-btn" id="st-master-ping-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+          Ping Test All
+        </button>
+      </div>
+    </div>
+
+    <div class="st-content" id="st-content">
+      <!-- Generated via JS -->
+    </div>
+
+    <!-- Monthly Ranking Container (Hidden until Expert Mode is ON) -->
+    <div class="monthly-ranking-container" id="monthly-ranking-container" style="display: none;">
+      <!-- Generated via JS -->
+    </div>
+  </div>
+
+  <div class="modal" id="player-modal">
+    <div class="modal-content-wrapper">
+      <button class="close-btn" id="close-modal">&times;</button>
+      <div class="player-container">
+        <iframe id="player-iframe" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"
+          allow="autoplay *; fullscreen *; picture-in-picture *; storage-access *" referrerpolicy="origin"></iframe>
+        <div id="next-prompt-container"></div>
+      </div>
+      <!-- Switch Server Button (appears after auto-check) -->
+      <button class="ac-switch-btn" id="ac-switch-btn" onclick="toggleSwitchPanel()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        Switch Server
+      </button>
+      <!-- Switch Server Panel -->
+      <div class="ac-switch-panel" id="ac-switch-panel">
+        <div class="ac-switch-panel-header">
+          <h3>Switch Server</h3>
+          <button class="ac-switch-panel-close" onclick="toggleSwitchPanel()">&times;</button>
+        </div>
+        <div class="ac-switch-panel-list" id="ac-switch-panel-list"></div>
+      </div>
+      <!-- Player Stats Container -->
+      <div id="player-stats-container" style="display: none; padding: 20px; background: #1a1a1a; border-radius: 0 0 12px 12px; margin-top: -5px; max-height: 400px; overflow-y: auto;"></div>
+    </div>
+  </div>
+
+  <div id="iptv-container" style="padding-top: 80px; padding-bottom: 50px; min-height: 80vh; color: white;">
+    <div id="iptv-loading"
+      style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50vh;">
+      <div class="spinner"
+        style="border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--primary-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;">
+      </div>
+      <p style="margin-top: 15px; font-weight: 600; color: #aaa;">Loading live channels...</p>
+    </div>
+
+    <!-- Header with breadcrumbs -->
+    <div class="iptv-header"
+      style="display: none; align-items: center; justify-content: space-between; padding: 0 4%; margin-bottom: 20px;"
+      id="iptv-header">
+      <h1 id="iptv-page-title" style="font-family: var(--heading-font); font-size: 2rem;">Global Channels</h1>
+      <button id="iptv-back-btn"
+        style="display: none; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; transition: all 0.2s;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+          <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+        Back to Countries
+      </button>
+    </div>
+
+    <!-- Home View -->
+    <div id="iptv-home-view" style="display: none; padding: 0 4% 50px 4%;"></div>
+
+    <!-- Country Grid View -->
+    <div id="iptv-countries-view" class="iptv-grid"
+      style="display: none; padding: 0 4%; display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px;">
+    </div>
+
+    <!-- Channel List View -->
+    <div id="iptv-channels-view" style="display: none; padding: 0 4%;">
+      <!-- Filter Bar -->
+      <div id="iptv-filter-bar"
+        style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; scrollbar-width: none;">
+      </div>
+      <!-- Sub-Filter Bar (Hidden by default) -->
+      <div id="iptv-subfilter-container" style="display: none; margin-bottom: 20px;">
+        <div style="position: relative; max-width: 400px;">
+          <input type="text" id="iptv-subfilter-input" placeholder="What kind of sports?"
+            style="width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(20,20,20,0.8); color: white; font-family: var(--body-font); outline: none;">
+        </div>
+      </div>
+
+      <div id="iptv-channels-grid"
+        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px;">
+      </div>
+      <div id="iptv-load-more-container" style="text-align: center; margin-top: 30px; display: none;">
+        <button id="iptv-load-more-btn"
+          style="background: var(--primary-color); color: white; border: none; padding: 12px 30px; border-radius: 8px; font-weight: 600; cursor: pointer;">Load
+          More</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- IPTV Player Modal -->
+  <div id="iptv-player-modal"
+    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999;">
+    <button id="close-iptv-player"
+      style="position: absolute; top: 20px; right: 20px; z-index: 10000; width: 40px; height: 40px; background: rgba(0,0,0,0.5); border: none; border-radius: 50%; color: white; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;">&times;</button>
+    <div
+      style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; padding: 20px; box-sizing: border-box;">
+
+      <div
+        style="width: 100%; max-width: 1200px; max-height: 80vh; aspect-ratio: 16/9; background: #000; box-shadow: 0 10px 40px rgba(0,0,0,0.8); position: relative;">
+        <video id="iptv-video" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto"
+          style="width: 100%; height: 100%;">
+        </video>
+      </div>
+
+      <div
+        style="margin-top: 25px; display: flex; gap: 15px; align-items: center; width: 100%; max-width: 1200px; justify-content: space-between;">
+        <div>
+          <h2 id="iptv-player-title"
+            style="color: white; font-size: 1.5rem; margin: 0; font-family: var(--heading-font);">Channel Name</h2>
+          <p id="iptv-player-category" style="color: #aaa; margin: 5px 0 0 0; font-size: 0.9rem;">Category</p>
+        </div>
+        <a id="iptv-vlc-btn" href="#"
+          style="background: #ff8800; color: white; display: flex; align-items: center; gap: 8px; font-weight: 600; padding: 12px 24px; border-radius: 8px; text-decoration: none; transition: transform 0.2s;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z" />
+          </svg>
+          Play in VLC
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Sports Player Modal -->
+  <div id="sports-player-modal" class="modal-overlay hidden"
+    style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+    <div class="modal-content"
+      style="background: #000; width: 100%; max-width: 1000px; border-radius: 12px; overflow-y: auto; max-height: 90vh; box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); position: relative;">
+      <button id="sports-close-modal" class="close-btn"
+        style="position: absolute; top: 16px; right: 16px; background: rgba(255, 255, 255, 0.1); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10;"><svg
+          width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg></button>
+      <div class="modal-header"
+        style="padding: 16px 20px; background: rgba(20, 20, 20, 0.9); border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-right: 60px;">
+        <h3 id="sports-modal-title" style="color: #fff; margin: 0 0 10px 0; font-size: 1.2rem; font-weight: 600;">Live
+          Stream</h3>
+        <div class="modal-servers" id="sports-modal-servers"
+          style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+          <span class="server-label" style="color: #aaa; font-size: 0.85rem;">Select Source:</span>
+          <!-- Dynamic Buttons -->
+        </div>
+      </div>
+      <div class="video-wrapper" id="sports-video-container"
+        style="position: relative; padding-bottom: 56.25%; height: 0; background: #000;">
+        <!-- iframe injected here -->
+      </div>
+      <div id="sports-stats-container" class="hidden" style="display: none; padding: 20px; color: #fff;">
+        <!-- Stats injected here -->
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/ui.js?v=20"></script>
+  <script src="../js/main.js?v=20"></script>
+  <script src="../js/sports_servers.js?v=20"></script>
+  <script src="../js/sports_stats.js?v=20"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase.js?v=20"></script>
+  <script src="../js/trakt.js?v=20"></script>
+  <script src="https://vjs.zencdn.net/8.6.1/video.min.js"></script>
+  <script src="../js/iptv.js?v=20"></script>
+  <script>
+    // Initialize Trakt UI
+    const traktLoginBtn = document.getElementById('trakt-login-btn');
+    const traktLoginText = document.getElementById('trakt-login-text');
+    const traktSyncBtn = document.getElementById('trakt-sync-btn');
+
+    if (TraktAuth.isLoggedIn() && traktLoginBtn && traktLoginText) {
+      traktLoginText.textContent = "Disconnect Trakt";
+      traktLoginBtn.style.color = "#e50914";
+      TraktAuth.checkConnectionStatus();
+
+      traktLoginBtn.addEventListener('click', () => {
+        if (confirm('Disconnect from Trakt.tv?')) {
+          TraktAuth.logout();
+        }
+      });
+
+      // Sync logic
+      if (traktSyncBtn) {
+        traktSyncBtn.addEventListener('click', () => {
+          TraktSync.fullSync();
+        });
+      }
+    } else {
+      TraktAuth.checkConnectionStatus(); // Shows red dot when not connected
+      if (traktLoginBtn) {
+        traktLoginBtn.addEventListener('click', () => {
+          TraktAuth.login();
+        });
+      }
+
+      if (traktSyncBtn) {
+        traktSyncBtn.addEventListener('click', () => {
+          if (confirm("You need to login to Trakt.tv first. Login now?")) {
+            TraktAuth.login();
+          }
+        });
+      }
+    }
+  </script>
+
+  <!-- Esportex Watch Modal -->
+  <div id="esportex-watch-modal"
+    style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; justify-content: center; align-items: center;">
+    <div
+      style="position: relative; width: 90%; max-width: 1000px; aspect-ratio: 16/9; background: #000; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden;">
+      <button onclick="closeEsportexWatch()"
+        style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: #fff; font-size: 1.2rem; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center;">&times;</button>
+      <iframe id="esportex-watch-iframe" src="" style="width: 100%; height: 100%; border: none;" allowfullscreen
+        allow="encrypted-media; picture-in-picture"></iframe>
+    </div>
+  </div>
+
+  <!-- Esportex Embed Modal -->
+  <div id="esportex-embed-modal"
+    style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center;">
+    <div
+      style="width: 90%; max-width: 500px; background: #1a1a1a; border-radius: 12px; padding: 25px; border: 1px solid rgba(255,255,255,0.1);">
+      <h3 style="margin-top: 0; margin-bottom: 15px; color: #fff;">Embed Code</h3>
+      <textarea id="esportex-embed-code"
+        style="width: 100%; height: 120px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #22c55e; padding: 12px; font-family: monospace; font-size: 0.85rem; border-radius: 8px; resize: none; margin-bottom: 15px;"
+        readonly></textarea>
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button onclick="closeEsportexEmbed()"
+          style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">Close</button>
+        <button
+          onclick="esportexCopyCode(document.getElementById('esportex-embed-code').value.match(/src=\&quot;(.*?)\&quot;/)[1])"
+          style="background: #e50914; border: none; color: #fff; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">Copy
+          Code</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/esportex.js"></script>
+</body>
+
+</html>

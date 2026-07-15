@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Server 27 Alpha Scraper</title>
+    <link rel="stylesheet" href="./style.css">
+    <!-- Load hls.js -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+  </head>
+  <body>
+    <div id="app">
+      <!-- Loading UI: The "Aether" Style Scraper Checklist -->
+      <div id="scraper-ui" class="active">
+        <div class="logo-container">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="spinner-icon">
+            <line x1="12" y1="2" x2="12" y2="6"></line>
+            <line x1="12" y1="18" x2="12" y2="22"></line>
+            <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+            <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+            <line x1="2" y1="12" x2="6" y2="12"></line>
+            <line x1="18" y1="12" x2="22" y2="12"></line>
+            <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+            <line x1="16.24" y1="4.93" x2="19.07" y2="7.76"></line>
+          </svg>
+        </div>
+        <h1 class="premium-title">Searching the Multiverse</h1>
+        <p class="subtitle">Extracting the highest quality ad-free stream...</p>
+        
+        <div class="server-checklist" id="server-checklist">
+          <!-- Dynamically populated via JS -->
+        </div>
+
+        <div id="error-message" class="error-msg hidden">
+          Could not find an ad-free stream for this title. Please try another server.
+        </div>
+      </div>
+
+      <!-- The Video Player -->
+      <div id="player-container" class="hidden">
+        <video id="video-player" controls crossorigin playsinline></video>
+        <div id="server-badge" class="server-badge"></div>
+      </div>
+    </div>
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>

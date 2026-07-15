@@ -1,0 +1,28 @@
+{
+  "name": "Prisma",
+  "short_name": "Prisma",
+  "description": "Stream Movies & TV Shows — Your premium streaming interface.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#141414",
+  "theme_color": "#141414",
+  "lang": "en",
+  "categories": ["entertainment"],
+  "icons": [
+    {
+      "src": "assets/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Browse Movies",
+      "short_name": "Movies",
+      "url": "./index.html",
+      "icons": [{ "src": "assets/logo.png", "sizes": "512x512" }]
+    }
+  ]
+}
